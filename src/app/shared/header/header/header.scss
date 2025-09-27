@@ -1,0 +1,132 @@
+:host {
+  font-family: 'Inter', sans-serif;
+}
+
+.header {
+  font-family: 'Inter', sans-serif;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .nav-brand {
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ff6b35;
+
+      i {
+        font-size: 2rem;
+      }
+    }
+
+    .tagline {
+      font-size: 0.85rem;
+      color: #666;
+      margin: 0;
+      font-weight: 400;
+    }
+  }
+
+  .nav-menu {
+    display: flex;
+    gap: 2rem;
+
+    .nav-link {
+      text-decoration: none;
+      color: #333;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: color 0.3s;
+      cursor: pointer;
+      position: relative; // dodane dla efektu podkreślenia
+
+      &:hover,
+      &.active {
+        color: #ff6b35;
+      }
+
+      // Dodatkowy efekt dla aktywnego linku - podkreślenie
+      &.active {
+        font-weight: 600; // pogrubienie aktywnego linku
+        
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -8px;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: #ff6b35;
+          border-radius: 1px;
+        }
+      }
+    }
+  }
+
+  .nav-actions {
+    display: flex;
+    gap: 1rem;
+
+    .btn-outline,
+    .btn-primary {
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #ff6b35;
+      border: 2px solid #ff6b35;
+
+      &:hover {
+        background: #ff6b35;
+        color: white;
+      }
+    }
+
+    .btn-primary {
+      background: #ff6b35;
+      color: white;
+
+      &:hover {
+        background: #e55a2b;
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    .nav-menu {
+      display: none !important;
+    }
+
+    .nav-actions {
+      gap: 0.5rem !important;
+    }
+  }
+}

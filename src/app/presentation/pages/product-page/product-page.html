@@ -1,0 +1,108 @@
+<div class="page-container product-container">
+  <app-header></app-header>
+  
+  <!-- Products Section -->
+  <section class="products-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Our Products</h2>
+        <p>Browse our complete collection of freshly baked goods</p>
+        
+        <!-- Search Container with Autocomplete -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input 
+              #searchInput
+              type="text" 
+              class="search-input"
+              placeholder="Search products by name..."
+              [(ngModel)]="searchQuery"
+              (input)="onSearchInput($event)"
+              (keydown)="onSearchKeyDown($event)"
+              (blur)="hideSuggestions()"
+              autocomplete="off"
+            />
+            <button 
+              *ngIf="searchQuery" 
+              class="clear-search"
+              (click)="clearSearch()"
+              type="button"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+            
+            <!-- Loading spinner for suggestions -->
+            <div *ngIf="isLoadingSuggestions" class="suggestions-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+            </div>
+          </div>
+          
+          <!-- Suggestions Dropdown -->
+          <div class="suggestions-dropdown" *ngIf="showSuggestions && suggestions.length > 0">
+            <div 
+              *ngFor="let suggestion of suggestions; let i = index"
+              class="suggestion-item"
+              [class.selected]="i === selectedSuggestionIndex"
+              (mousedown)="selectSuggestion(suggestion)"
+            >
+              <div class="suggestion-image">
+                <img [src]="suggestion.base64Image" [alt]="suggestion.name" />
+              </div>
+              <div class="suggestion-content">
+                <div class="suggestion-name">{{suggestion.name}}</div>
+                <div class="suggestion-price">{{formatPrice(suggestion.price)}}</div>
+              </div>
+              <div class="suggestion-stock" [class.out-of-stock]="suggestion.stock === 0">
+                <i class="fas" [class.fa-check]="suggestion.stock > 0" [class.fa-times]="suggestion.stock === 0"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="products-loading" *ngIf="isLoading">
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading our delicious products...</p>
+        </div>
+      </div>
+      
+      <!-- No results message -->
+      <div class="no-results" *ngIf="!isLoading && products.length === 0 && searchQuery">
+        <i class="fas fa-search"></i>
+        <h3>No products found</h3>
+        <p>Try adjusting your search terms or <button class="link-button" (click)="clearSearch()">view all products</button></p>
+      </div>
+
+      <div class="products-grid" *ngIf="!isLoading && products.length > 0">
+        <div class="product-card" *ngFor="let product of products">
+          <div class="product-image">
+            <img [src]="product.base64Image" [alt]="product.name" />
+            <div class="stock-badge" 
+                 [class.low-stock]="product.stock < 10" 
+                 [class.out-of-stock]="product.stock === 0">
+              <span *ngIf="product.stock === 0">Out of Stock</span>
+              <span *ngIf="product.stock > 0 && product.stock < 10">Only {{product.stock}} left</span>
+              <span *ngIf="product.stock >= 10">In Stock</span>
+            </div>
+          </div>
+          <div class="product-info">
+            <h3>{{product.name}}</h3>
+            <p class="product-description">{{product.description}}</p>
+            <div class="product-price">
+              <span class="price">{{formatPrice(product.price)}}</span>
+            </div>
+            <button class="btn-add-to-cart" [disabled]="product.stock === 0">
+              <i class="fas fa-cart-plus"></i>
+              <span *ngIf="product.stock > 0">Add to Cart</span>
+              <span *ngIf="product.stock === 0">Unavailable</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <app-footer></app-footer>
+</div>

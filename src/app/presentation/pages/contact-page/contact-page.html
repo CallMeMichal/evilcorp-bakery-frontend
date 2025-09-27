@@ -1,0 +1,284 @@
+<div class="page-container contact-container">
+  <app-header></app-header>
+  
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-background">
+      <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1920&h=800&fit=crop&crop=center&q=80" alt="Contact us background" />
+      <div class="hero-overlay"></div>
+    </div>
+    <div class="container">
+      <div class="hero-content">
+        <h1>Contact Us</h1>
+        <p>We'd love to hear from you. Get in touch!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Info & Form Section -->
+  <section class="contact-section">
+    <div class="container">
+      <div class="row">
+        <!-- Contact Information -->
+        <div class="col-lg-4">
+          <div class="contact-info">
+            <h2>Get In Touch</h2>
+            <p>Have a question about our products, want to place a custom order, or just want to say hello? We're here to help!</p>
+            
+            <div class="contact-details">
+              <div class="contact-item">
+                <div class="contact-icon">
+                  <i class="fas fa-phone"></i>
+                </div>
+                <div class="contact-text">
+                  <h3>Phone</h3>
+                  <p>(+48) 000-000-000</p>
+                </div>
+              </div>
+              
+              <div class="contact-item">
+                <div class="contact-icon">
+                  <i class="fas fa-envelope"></i>
+                </div>
+                <div class="contact-text">
+                  <h3>Email</h3>
+                  <p>info@evilcorpbakery.com</p>
+                </div>
+              </div>
+              
+              <div class="contact-item">
+                <div class="contact-icon">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="contact-text">
+                  <h3>Address</h3>
+                  <p>Warszawa, Starmomiejska 41</p>
+                </div>
+              </div>
+              
+              <div class="contact-item">
+                <div class="contact-icon">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="contact-text">
+                  <h3>Opening Hours</h3>
+                  <p>Mon-Fri: 6:00 AM - 8:00 PM<br>
+                     Sat-Sun: 7:00 AM - 7:00 PM</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="social-links">
+              <h3>Follow Us</h3>
+              <div class="social-icons">
+                <a href="#" class="social-icon">
+                  <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="#" class="social-icon">
+                  <i class="fab fa-instagram"></i>
+                </a>
+                <a href="#" class="social-icon">
+                  <i class="fab fa-twitter"></i>
+                </a>
+                <a href="#" class="social-icon">
+                  <i class="fab fa-youtube"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Contact Form -->
+        <div class="col-lg-8">
+          <div class="contact-form">
+            <h2>Send Us a Message</h2>
+            <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="firstName">First Name *</label>
+                  <input 
+                    type="text" 
+                    id="firstName" 
+                    formControlName="firstName"
+                    [class.invalid]="isFieldInvalid('firstName')"
+                    placeholder="Your first name">
+                  <div class="error-message" *ngIf="isFieldInvalid('firstName')">
+                    First name is required
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="lastName">Last Name *</label>
+                  <input 
+                    type="text" 
+                    id="lastName" 
+                    formControlName="lastName"
+                    [class.invalid]="isFieldInvalid('lastName')"
+                    placeholder="Your last name">
+                  <div class="error-message" *ngIf="isFieldInvalid('lastName')">
+                    Last name is required
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="email">Email Address *</label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    formControlName="email"
+                    [class.invalid]="isFieldInvalid('email')"
+                    placeholder="your.email@example.com">
+                  <div class="error-message" *ngIf="isFieldInvalid('email')">
+                    <span *ngIf="contactForm.get('email')?.errors?.['required']">Email is required</span>
+                    <span *ngIf="contactForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="phone">Phone Number</label>
+                  <input 
+                    type="tel" 
+                    id="phone" 
+                    formControlName="phone"
+                    placeholder="(+48) 000-000-000">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="subject">Subject *</label>
+                <select 
+                  id="subject" 
+                  formControlName="subject"
+                  [class.invalid]="isFieldInvalid('subject')">
+                  <option value="">Select a subject</option>
+                  <option value="general">General Inquiry</option>
+                  <option value="order">Custom Order</option>
+                  <option value="catering">Catering Services</option>
+                  <option value="complaint">Complaint</option>
+                  <option value="compliment">Compliment</option>
+                  <option value="other">Other</option>
+                </select>
+                <div class="error-message" *ngIf="isFieldInvalid('subject')">
+                  Please select a subject
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="message">Message *</label>
+                <textarea 
+                  id="message" 
+                  formControlName="message"
+                  [class.invalid]="isFieldInvalid('message')"
+                  placeholder="Tell us how we can help you..."
+                  rows="6"></textarea>
+                <div class="error-message" *ngIf="isFieldInvalid('message')">
+                  <span *ngIf="contactForm.get('message')?.errors?.['required']">Message is required</span>
+                  <span *ngIf="contactForm.get('message')?.errors?.['minlength']">Message must be at least 10 characters long</span>
+                </div>
+              </div>
+              
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" formControlName="newsletter">
+                  <span class="checkbox-custom"></span>
+                  <span class="checkbox-text">Subscribe to our newsletter for special offers and updates</span>
+                </label>
+              </div>
+              
+              <div class="form-actions">
+                <button 
+                  type="submit" 
+                  class="btn-submit"
+                  [disabled]="contactForm.invalid || isSubmitting">
+                  <i class="fas fa-paper-plane" *ngIf="!isSubmitting"></i>
+                  <i class="fas fa-spinner fa-spin" *ngIf="isSubmitting"></i>
+                  <span *ngIf="!isSubmitting">Send Message</span>
+                  <span *ngIf="isSubmitting">Sending...</span>
+                </button>
+              </div>
+            </form>
+            
+            <div class="success-message" *ngIf="showSuccessMessage">
+              <i class="fas fa-check-circle"></i>
+              <p>Thank you for your message! We'll get back to you within 24 hours.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Map Section -->
+  <section class="map-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Find Our Bakery</h2>
+        <p>Visit us at our cozy location in the heart of Warsaw</p>
+      </div>
+      
+      <div class="map-container">
+        <div class="map-wrapper">
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2443.454089494!2d21.012229315917!3d52.24997797976!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x471ecc669a869f01%3A0x72f0be2a9435b136!2sStaromiejska%2041%2C%2000-272%20Warszawa%2C%20Poland!5e0!3m2!1sen!2spl!4v1650000000000!5m2!1sen!2spl"
+            width="100%" 
+            height="400" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+        
+        <div class="location-card">
+          <div class="location-info">
+            <h3>EvilCorp Bakery</h3>
+            <p><i class="fas fa-map-marker-alt"></i> Starmomiejska 41, 00-272 Warszawa</p>
+            <p><i class="fas fa-phone"></i> (+48) 000-000-000</p>
+            <div class="directions-btn">
+              <a href="https://maps.google.com/?q=Starmomiejska+41,+Warszawa" target="_blank" class="btn btn-primary">
+                <i class="fas fa-directions"></i>
+                Get Directions
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Frequently Asked Questions</h2>
+        <p>Quick answers to common questions</p>
+      </div>
+      
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h3><i class="fas fa-question-circle"></i> Do you take custom orders?</h3>
+          <p>Yes! We love creating custom cakes and pastries for special occasions. Please contact us at least 48 hours in advance.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3><i class="fas fa-question-circle"></i> Do you offer catering services?</h3>
+          <p>Absolutely! We provide catering for events of all sizes. Contact us to discuss your needs and get a quote.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3><i class="fas fa-question-circle"></i> Do you have gluten-free options?</h3>
+          <p>Yes, we offer a selection of gluten-free breads, cakes, and pastries. Please ask our staff for today's available options.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h3><i class="fas fa-question-circle"></i> Can I place orders online?</h3>
+          <p>Currently, we accept orders via phone or in-person. We're working on an online ordering system coming soon!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <app-footer></app-footer>
+</div>

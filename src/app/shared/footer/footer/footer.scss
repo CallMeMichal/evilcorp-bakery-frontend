@@ -1,0 +1,112 @@
+:host {
+  font-family: 'Inter', sans-serif;
+}
+
+.footer {
+  font-family: 'Inter', sans-serif;
+  background: #2c2c2c;
+  color: white;
+  padding: 3rem 0 1rem;
+
+  .footer-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 3rem;
+    margin-bottom: 2rem;
+
+    .footer-brand {
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #ff6b35;
+        margin-bottom: 1rem;
+
+        i {
+          font-size: 2rem;
+        }
+      }
+
+      p {
+        color: #ccc;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.6;
+      }
+    }
+
+    .footer-links {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+
+      .link-group {
+        h4 {
+          color: #ff6b35;
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-bottom: 1rem;
+        }
+
+        a {
+          display: block;
+          color: #ccc;
+          font-size: 1rem;
+          font-weight: 400;
+          text-decoration: none;
+          margin-bottom: 0.5rem;
+          transition: color 0.3s;
+          cursor: pointer;
+
+          &:hover {
+            color: #ff6b35;
+          }
+        }
+
+        p {
+          color: #ccc;
+          font-size: 1rem;
+          font-weight: 400;
+          margin-bottom: 0.5rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          i {
+            color: #ff6b35;
+            width: 16px;
+          }
+        }
+      }
+    }
+  }
+
+  .footer-bottom {
+    font-family: 'Inter', sans-serif;
+    border-top: 1px solid #444;
+    padding-top: 1rem;
+    text-align: center;
+
+    p {
+      color: #999;
+      font-size: 0.9rem;
+      font-weight: 400;
+      margin: 0;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    .footer-content {
+      grid-template-columns: 1fr !important;
+      gap: 2rem !important;
+    }
+
+    .footer-links {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}

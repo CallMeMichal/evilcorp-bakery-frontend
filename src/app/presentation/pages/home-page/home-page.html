@@ -1,0 +1,177 @@
+<div class="page-container home-container">
+
+  <app-header></app-header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text">
+          <div class="badge">
+            <i class="fas fa-star"></i>
+            <span>Rated #1 Local Bakery</span>
+          </div>
+          
+          <h1 class="hero-title">
+            Freshly Baked
+            <span class="highlight">Goodness</span> Every
+            Day
+          </h1>
+          
+          <p class="hero-description">
+            Experience the perfect blend of traditional recipes and modern flavors. 
+            From artisan breads to decadent pastries, every bite tells a story of 
+            passion and craftsmanship.
+          </p>
+          
+          <div class="hero-actions">
+            <button class="btn-primary">
+              <i class="fas fa-shopping-cart"></i>
+              Order Now
+            </button>
+            <button class="btn-outline">
+              <i class="fas fa-play"></i>
+              Watch Our Story
+            </button>
+          </div>
+        </div>
+        
+        <div class="hero-image">
+          <div class="bakery-showcase">
+            <img src="images/firstViewPhoto.jpg" alt="Fresh baked goods" />
+            <div class="rating-badge">
+              <div class="stars">
+                <i class="fas fa-star" *ngFor="let star of stars"></i>
+                <span class="rating-text">4.9★</span>
+              </div>
+              <p>2.1k reviews</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat-item">
+          <h3>25+</h3>
+          <p>Years Experience</p>
+        </div>
+        <div class="stat-item">
+          <h3>10k+</h3>
+          <p>Happy Customers</p>
+        </div>
+        <div class="stat-item">
+          <h3>150+</h3>
+          <p>Daily Products</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Choose Section -->
+  <section class="why-choose">
+    <div class="container">
+      <div class="section-header">
+        <h2>Why Choose Sweet Bakery?</h2>
+        <p>We're committed to delivering the finest baked goods using only the best ingredients and time-honored techniques.</p>
+      </div>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-leaf"></i>
+          </div>
+          <h3>Fresh Ingredients</h3>
+          <p>We source only the finest, locally-sourced ingredients to ensure every product meets our high standards of quality and freshness.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <h3>Daily Fresh Baking</h3>
+          <p>Our master bakers start before dawn to ensure everything is baked fresh daily, delivering warmth and flavor in every bite.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <h3>Made with Love</h3>
+          <p>Every recipe is crafted with passion and attention to detail, bringing you the authentic taste of traditional baking.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Section -->
+  <section class="products-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Our Signature Products</h2>
+        <p>Discover our most beloved creations, each made with care and expertise</p>
+      </div>
+
+      <div class="products-loading" *ngIf="isLoading">
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading our delicious products...</p>
+        </div>
+      </div>
+
+    <div class="products-grid" *ngIf="!isLoading">
+        <div class="product-card" *ngFor="let product of featuredProducts">
+            <div class="product-image">
+            <!-- Zmiana: dodanie data:image/jpeg;base64, dla base64 -->
+            <img [src]="product.base64Image" [alt]="product.name" />
+            <div class="stock-badge" [class.low-stock]="product.stock < 10" [class.out-of-stock]="product.stock === 0">
+                <span *ngIf="product.stock === 0">Out of Stock</span>
+                <span *ngIf="product.stock > 0 && product.stock < 10">Only {{product.stock}} left</span>
+                <span *ngIf="product.stock >= 10">In Stock</span>
+            </div>
+            </div>
+            <div class="product-info">
+            <h3>{{product.name}}</h3>
+            <p class="product-description">{{product.description}}</p>
+            <div class="product-price">
+                <span class="price">{{formatPrice(product.price)}}</span>
+            </div>
+            <button class="btn-add-to-cart" [disabled]="product.stock === 0">
+                <i class="fas fa-cart-plus"></i>
+                <span *ngIf="product.stock > 0">Add to Cart</span>
+                <span *ngIf="product.stock === 0">Unavailable</span>
+            </button>
+            </div>
+        </div>
+    </div>
+
+      <div class="view-all-products">
+        <button class="btn-outline">
+          <i class="fas fa-eye"></i>
+          View All Products
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta">
+    <div class="container">
+      <h2>Ready to Taste the Difference?</h2>
+      <p>Join thousands of satisfied customers who choose Sweet Bakery for their daily dose of freshly baked happiness.</p>
+      
+      <div class="cta-actions">
+        <button class="btn-white">
+          <i class="fas fa-phone"></i>
+          Call Now: (555) 123-4567
+        </button>
+        <button class="btn-outline-white">
+          <i class="fas fa-map-marker-alt"></i>
+          Visit Our Store
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <app-footer></app-footer>
+</div>

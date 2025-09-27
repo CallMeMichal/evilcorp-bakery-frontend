@@ -1,0 +1,32 @@
+<header class="header">
+  <div class="container">
+    <div class="nav-brand">
+      <div class="logo">
+        <i class="fas fa-birthday-cake"></i>
+        <span>Evil Corp Bakery</span>
+      </div>
+      <p class="tagline">Quality. Always Daily</p>
+    </div>
+           
+    <nav class="nav-menu">
+      <a routerLink="/" 
+         routerLinkActive="active" 
+         [routerLinkActiveOptions]="{exact: true}" 
+         class="nav-link">Home</a>
+      <a routerLink="/about" 
+         routerLinkActive="active" 
+         class="nav-link">About</a>
+      <a routerLink="/products" 
+         routerLinkActive="active" 
+         class="nav-link">Products</a>
+      <a routerLink="/contact" 
+         routerLinkActive="active" 
+         class="nav-link">Contact</a>
+    </nav>
+           
+    <div class="nav-actions">
+      <button class="btn-outline">Sign In</button>
+      <button class="btn-primary">Dashboard</button>
+    </div>
+  </div>
+</header>
