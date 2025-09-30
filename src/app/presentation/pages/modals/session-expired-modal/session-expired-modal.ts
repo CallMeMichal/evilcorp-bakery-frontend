@@ -1,4 +1,3 @@
-// session-expired-modal.ts
 import { CommonModule } from '@angular/common';
 import { Component, ApplicationRef } from '@angular/core';
 import { Router } from '@angular/router';

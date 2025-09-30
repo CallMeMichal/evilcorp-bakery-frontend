@@ -1,13 +1,14 @@
-// auth.interceptor.ts
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { ApplicationRef, createComponent, EnvironmentInjector, ComponentRef } from '@angular/core';
-import { SessionExpiredModal } from '../../../presentation/pages/modals/session-expired-modal/session-expired-modal'; 
+import { SessionExpiredModal } from '../../../presentation/pages/modals/session-expired-modal/session-expired-modal';
+import { UnauthorizedModal } from '../../../presentation/pages/modals/unauthorized-modal/unauthorized-modal';
 
-// Zmienna globalna do przechowywania referencji do modala
-let modalComponentRef: ComponentRef<SessionExpiredModal> | null = null;
+// Zmienne globalne do przechowywania referencji do modali
+let sessionExpiredModalRef: ComponentRef<SessionExpiredModal> | null = null;
+let unauthorizedModalRef: ComponentRef<UnauthorizedModal> | null = null;
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
@@ -15,7 +16,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const injector = inject(EnvironmentInjector);
   const token = localStorage.getItem('jwt_token');
 
-  const authReq = token 
+  const authReq = token
     ? req.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -25,28 +26,65 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
+      console.log(error);
+
+      // 401 - Token expired/invalid
       if (error.status === 401) {
-        localStorage.removeItem('jwt_token');
+        const errorResponse = error.error;
         
-        if (!modalComponentRef) {
+        if (errorResponse?.title === 'Unauthorized' && 
+            (errorResponse?.detail?.includes('Token') ||
+             errorResponse?.detail?.includes('invalid') ||
+             errorResponse?.detail?.includes('expired'))) {
+          
+          localStorage.removeItem('jwt_token');
+          
+          if (!sessionExpiredModalRef) {
+            sessionExpiredModalRef = createComponent(SessionExpiredModal, {
+              environmentInjector: injector
+            });
 
-          modalComponentRef = createComponent(SessionExpiredModal, {
-            environmentInjector: injector
-          });
-
-          document.body.appendChild(modalComponentRef.location.nativeElement);
-          appRef.attachView(modalComponentRef.hostView);
+            document.body.appendChild(sessionExpiredModalRef.location.nativeElement);
+            appRef.attachView(sessionExpiredModalRef.hostView);
+          }
         }
       }
+
+      // 403 - Forbidden (brak uprawnień)
+      if (error.status === 403) {
+        const errorResponse = error.error;
+        
+        if (errorResponse?.title === 'Forbidden') {
+          if (!unauthorizedModalRef) {
+            unauthorizedModalRef = createComponent(UnauthorizedModal, {
+              environmentInjector: injector
+            });
+
+            document.body.appendChild(unauthorizedModalRef.location.nativeElement);
+            appRef.attachView(unauthorizedModalRef.hostView);
+          }
+        }
+      }
+
       return throwError(() => error);
     })
   );
 };
 
+// Funkcja do ukrywania modala sesji
 export function hideSessionExpiredModal(appRef: ApplicationRef): void {
-  if (modalComponentRef) {
-    appRef.detachView(modalComponentRef.hostView);
-    modalComponentRef.destroy();
-    modalComponentRef = null;
+  if (sessionExpiredModalRef) {
+    appRef.detachView(sessionExpiredModalRef.hostView);
+    sessionExpiredModalRef.destroy();
+    sessionExpiredModalRef = null;
+  }
+}
+
+// Funkcja do ukrywania modala unauthorized
+export function hideUnauthorizedModal(appRef: ApplicationRef): void {
+  if (unauthorizedModalRef) {
+    appRef.detachView(unauthorizedModalRef.hostView);
+    unauthorizedModalRef.destroy();
+    unauthorizedModalRef = null;
   }
 }
