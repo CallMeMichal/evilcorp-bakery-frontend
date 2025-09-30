@@ -1,0 +1,267 @@
+<!-- src/app/pages/auth/register-page/register-page.html -->
+<div class="register-container">
+  <div class="register-content">
+    <div class="register-left">
+      <div class="register-form">
+        <div class="brand-header">
+          <div class="brand-logo">
+            <i class="fas fa-birthday-cake"></i>
+            <div class="brand-text">
+              <h1>Sweet Bakery</h1>
+              <p>Freshly Baked Daily</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-header">
+          <h2>Join Our Sweet Family</h2>
+          <p>Create your account and start your delicious journey</p>
+        </div>
+
+        <form (ngSubmit)="onRegister()" class="register-form-fields">
+          <!-- Name Fields -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First Name</label>
+              <div class="input-wrapper">
+                <i class="fas fa-user"></i>
+                <input 
+                  type="text" 
+                  id="firstName" 
+                  [(ngModel)]="firstName"
+                  name="firstName"
+                  placeholder="John"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <div class="input-wrapper">
+                <i class="fas fa-user"></i>
+                <input 
+                  type="text" 
+                  id="lastName" 
+                  [(ngModel)]="lastName"
+                  name="lastName"
+                  placeholder="Doe"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Email & Phone Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <div class="input-wrapper">
+                <i class="fas fa-envelope"></i>
+                <input 
+                  type="email" 
+                  id="email" 
+                  [(ngModel)]="email"
+                  name="email"
+                  placeholder="john@example.com"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="phoneNumber">Phone</label>
+              <div class="input-wrapper">
+                <i class="fas fa-phone"></i>
+                <input 
+                  type="tel" 
+                  id="phoneNumber" 
+                  [(ngModel)]="phoneNumber"
+                  name="phoneNumber"
+                  placeholder="+1 (555) 123-4567"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Password Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="password">Password</label>
+              <div class="input-wrapper">
+                <i class="fas fa-lock"></i>
+                <input 
+                  type="password" 
+                  id="password" 
+                  [(ngModel)]="password"
+                  name="password"
+                  placeholder="Password"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm</label>
+              <div class="input-wrapper">
+                <i class="fas fa-lock"></i>
+                <input 
+                  type="password" 
+                  id="confirmPassword" 
+                  [(ngModel)]="confirmPassword"
+                  name="confirmPassword"
+                  placeholder="Confirm"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Date of Birth - Compact -->
+          <div class="form-group">
+            <label for="dateOfBirth">Birthday</label>
+            <p class="field-note">Get a special birthday treat!</p>
+            <div class="input-wrapper">
+              <i class="fas fa-calendar"></i>
+              <input 
+                type="date" 
+                id="dateOfBirth" 
+                [(ngModel)]="dateOfBirth"
+                name="dateOfBirth"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Dietary Preferences - Compact -->
+          <div class="form-section">
+            <h3>Dietary Preferences <span class="optional">(Optional)</span></h3>
+            <div class="checkbox-grid">
+              <label class="checkbox-wrapper">
+                <input type="checkbox" [(ngModel)]="vegan" name="vegan" />
+                <span class="checkmark"></span>
+                Vegan
+              </label>
+              <label class="checkbox-wrapper">
+                <input type="checkbox" [(ngModel)]="glutenFree" name="glutenFree" />
+                <span class="checkmark"></span>
+                Gluten-Free
+              </label>
+              <label class="checkbox-wrapper">
+                <input type="checkbox" [(ngModel)]="sugarFree" name="sugarFree" />
+                <span class="checkmark"></span>
+                Sugar-Free
+              </label>
+              <label class="checkbox-wrapper">
+                <input type="checkbox" [(ngModel)]="keto" name="keto" />
+                <span class="checkmark"></span>
+                Keto
+              </label>
+            </div>
+          </div>
+
+          <!-- Agreement -->
+          <div class="form-section">
+            <label class="checkbox-wrapper agreement">
+              <input type="checkbox" [(ngModel)]="agreeToTerms" name="agreeToTerms" required />
+              <span class="checkmark"></span>
+              I agree to <a href="#" class="link">Terms</a> and <a href="#" class="link">Privacy Policy</a>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-register" [disabled]="!agreeToTerms">
+            <i class="fas fa-user-plus"></i>
+            Create Account
+          </button>
+
+          <div class="divider">
+            <span>Or sign up with</span>
+          </div>
+
+          <div class="social-buttons">
+            <button type="button" class="btn-google" (click)="onGoogleSignUp()">
+              <i class="fab fa-google"></i>
+              Google
+            </button>
+            <button type="button" class="btn-facebook" (click)="onFacebookSignUp()">
+              <i class="fab fa-facebook-f"></i>
+              Facebook
+            </button>
+          </div>
+
+          <div class="signin-link">
+            <span>Already have an account? </span>
+            <button type="button" class="link-button" (click)="goToSignIn()">
+              Sign in here
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="register-right">
+      <div class="community-section">
+        <div class="bakery-image">
+          <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Bakery Team" />
+        </div>
+        
+        <div class="community-content">
+          <h3>Welcome to Our Sweet Community!</h3>
+          <p>Join thousands of happy customers and enjoy exclusive member benefits</p>
+          
+          <div class="benefits">
+            <div class="benefit">
+              <div class="benefit-icon">
+                <i class="fas fa-percentage"></i>
+              </div>
+              <div class="benefit-text">
+                <h4>25% Off</h4>
+                <p>Member Discount</p>
+              </div>
+            </div>
+            <div class="benefit">
+              <div class="benefit-icon">
+                <i class="fas fa-birthday-cake"></i>
+              </div>
+              <div class="benefit-text">
+                <h4>Free Cake</h4>
+                <p>On Your Birthday</p>
+              </div>
+            </div>
+            <div class="benefit">
+              <div class="benefit-icon">
+                <i class="fas fa-bell"></i>
+              </div>
+              <div class="benefit-text">
+                <h4>Early Access</h4>
+                <p>New Products</p>
+              </div>
+            </div>
+            <div class="benefit">
+              <div class="benefit-icon">
+                <i class="fas fa-book"></i>
+              </div>
+              <div class="benefit-text">
+                <h4>Free Recipes</h4>
+                <p>Exclusive Access</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-number">12K+</div>
+              <div class="stat-label">Happy Members</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">4.9★</div>
+              <div class="stat-label">Average Rating</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">50+</div>
+              <div class="stat-label">Fresh Items Daily</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

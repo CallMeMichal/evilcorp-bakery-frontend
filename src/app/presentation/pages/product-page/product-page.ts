@@ -1,6 +1,8 @@
+// src/app/pages/product/product-page/product-page.ts
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
 import { ProductService } from '../../../core/services/product.service';
+import { CartService } from '../../../core/services/cart.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
@@ -16,7 +18,7 @@ export class ProductPage implements OnInit {
   allProducts: any[] = [];
   isLoading = true;
   
-  // 🔥 DODAJ TE WŁAŚCIWOŚCI:
+  // Search properties
   searchQuery = '';
   suggestions: any[] = [];
   showSuggestions = false;
@@ -27,7 +29,10 @@ export class ProductPage implements OnInit {
   
   private searchSubject = new Subject<string>();
 
-  constructor(private productService: ProductService) {
+  constructor(
+    private productService: ProductService,
+    private cartService: CartService
+  ) {
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -67,7 +72,7 @@ export class ProductPage implements OnInit {
       next: (products) => {
         console.log(products);
         this.products = products;
-        this.allProducts = products; // 🔥 DODAJ TĘ LINIĘ
+        this.allProducts = products;
         this.isLoading = false;
       },
       error: (error) => {
@@ -77,7 +82,6 @@ export class ProductPage implements OnInit {
     });
   }
 
-  
   // Search input handling
   onSearchInput(event: Event): void {
     const target = event.target as HTMLInputElement;
@@ -159,6 +163,10 @@ export class ProductPage implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  addToCart(product: any): void {
+    this.cartService.addToCart(product);
   }
 
   formatPrice(price: number): string {

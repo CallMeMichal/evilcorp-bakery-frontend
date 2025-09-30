@@ -1,0 +1,96 @@
+<!-- src/app/pages/checkout/checkout-page/checkout-page.html -->
+<div class="page-container checkout-container">
+  <app-header></app-header>
+  
+  <section class="checkout-section">
+    <div class="container">
+      <div class="checkout-header">
+        <button class="back-button" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i>
+          Back to Shopping
+        </button>
+        <h1>Checkout</h1>
+      </div>
+
+      <div class="checkout-content">
+        <!-- Order Summary -->
+        <div class="order-summary">
+          <h2>Order Summary</h2>
+          
+          <div class="order-items">
+            <div class="order-item" *ngFor="let item of cartItems">
+              <div class="item-image">
+                <img [src]="item.base64Image" [alt]="item.name" />
+              </div>
+              <div class="item-details">
+                <h3>{{item.name}}</h3>
+                <p class="item-quantity">Quantity: {{item.quantity}}</p>
+                <p class="item-price">{{formatPrice(item.price)}} each</p>
+              </div>
+              <div class="item-total">
+                {{formatPrice(item.price * item.quantity)}}
+              </div>
+            </div>
+          </div>
+
+          <div class="order-totals">
+            <div class="total-row">
+              <span>Subtotal:</span>
+              <span>{{formatPrice(subtotal)}}</span>
+            </div>
+            <div class="total-row">
+              <span>Shipping:</span>
+              <span>{{formatPrice(shipping)}}</span>
+            </div>
+            <div class="total-row">
+              <span>Tax (8%):</span>
+              <span>{{formatPrice(tax)}}</span>
+            </div>
+            <div class="total-row total-final">
+              <span><strong>Total:</strong></span>
+              <span><strong>{{formatPrice(cartTotal)}}</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="payment-section">
+          <h2>Payment Methods</h2>
+          
+          <div class="payment-methods">
+            <button class="payment-button credit-card" (click)="payWithCreditCard()">
+              <i class="fas fa-credit-card"></i>
+              <span>Credit Card</span>
+              <i class="fas fa-chevron-right"></i>
+            </button>
+
+            <button class="payment-button paypal" (click)="payWithPayPal()">
+              <i class="fab fa-paypal"></i>
+              <span>PayPal</span>
+              <i class="fas fa-chevron-right"></i>
+            </button>
+
+            <button class="payment-button apple-pay" (click)="payWithApplePay()">
+              <i class="fab fa-apple"></i>
+              <span>Apple Pay</span>
+              <i class="fas fa-chevron-right"></i>
+            </button>
+
+            <button class="payment-button google-pay" (click)="payWithGooglePay()">
+              <i class="fab fa-google"></i>
+              <span>Google Pay</span>
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+
+          <div class="secure-checkout">
+            <i class="fas fa-lock"></i>
+            <span>Your payment information is secure and encrypted</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <app-footer></app-footer>
+</div>

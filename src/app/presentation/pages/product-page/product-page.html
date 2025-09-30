@@ -75,32 +75,32 @@
         <p>Try adjusting your search terms or <button class="link-button" (click)="clearSearch()">view all products</button></p>
       </div>
 
-      <div class="products-grid" *ngIf="!isLoading && products.length > 0">
-        <div class="product-card" *ngFor="let product of products">
-          <div class="product-image">
-            <img [src]="product.base64Image" [alt]="product.name" />
-            <div class="stock-badge" 
-                 [class.low-stock]="product.stock < 10" 
-                 [class.out-of-stock]="product.stock === 0">
-              <span *ngIf="product.stock === 0">Out of Stock</span>
-              <span *ngIf="product.stock > 0 && product.stock < 10">Only {{product.stock}} left</span>
-              <span *ngIf="product.stock >= 10">In Stock</span>
-            </div>
-          </div>
-          <div class="product-info">
-            <h3>{{product.name}}</h3>
-            <p class="product-description">{{product.description}}</p>
-            <div class="product-price">
-              <span class="price">{{formatPrice(product.price)}}</span>
-            </div>
-            <button class="btn-add-to-cart" [disabled]="product.stock === 0">
-              <i class="fas fa-cart-plus"></i>
-              <span *ngIf="product.stock > 0">Add to Cart</span>
-              <span *ngIf="product.stock === 0">Unavailable</span>
-            </button>
+          <div class="products-grid" *ngIf="!isLoading && products.length > 0">
+      <div class="product-card" *ngFor="let product of products">
+        <div class="product-image">
+          <img [src]="product.base64Image" [alt]="product.name" />
+          <div class="stock-badge" 
+              [class.low-stock]="product.stock < 10" 
+              [class.out-of-stock]="product.stock === 0">
+            <span *ngIf="product.stock === 0">Out of Stock</span>
+            <span *ngIf="product.stock > 0 && product.stock < 10">Only {{product.stock}} left</span>
+            <span *ngIf="product.stock >= 10">In Stock</span>
           </div>
         </div>
+        <div class="product-info">
+          <h3>{{product.name}}</h3>
+          <p class="product-description">{{product.description}}</p>
+          <div class="product-price">
+            <span class="price">{{formatPrice(product.price)}}</span>
+          </div>
+          <button class="btn-add-to-cart" [disabled]="product.stock === 0" (click)="addToCart(product)">
+            <i class="fas fa-cart-plus"></i>
+            <span *ngIf="product.stock > 0">Add to Cart</span>
+            <span *ngIf="product.stock === 0">Unavailable</span>
+          </button>
+        </div>
       </div>
+    </div>
     </div>
   </section>
   

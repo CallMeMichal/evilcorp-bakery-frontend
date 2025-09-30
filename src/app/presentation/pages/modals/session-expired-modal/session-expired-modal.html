@@ -1,0 +1,23 @@
+<div class="modal-overlay">
+  <div class="modal-content">
+    <div class="icon-container">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    </div>
+    
+    <h1 class="title">Session Expired</h1>
+    
+    <p class="message">
+      Your session has expired due to inactivity.<br>
+      You need to log in again to continue.
+    </p>
+    
+    <button class="login-button" (click)="goToLogin()">
+      <i class="fas fa-sign-in-alt"></i>
+      Go to Login
+    </button>
+  </div>
+</div>

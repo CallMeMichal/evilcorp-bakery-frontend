@@ -19,6 +19,9 @@ export class ProductService {
   }
 
 
+  
+
+
     getProductSuggestions(query: string): Observable<Product[]> {
     if (!query || query.length < 1) {
       return of([]);

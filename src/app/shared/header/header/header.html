@@ -1,32 +1,135 @@
 <header class="header">
   <div class="container">
-    <div class="nav-brand">
-      <div class="logo">
-        <i class="fas fa-birthday-cake"></i>
-        <span>Evil Corp Bakery</span>
-      </div>
-      <p class="tagline">Quality. Always Daily</p>
+    <div class="nav-brand" (click)="goHome()">
+      <i class="fas fa-birthday-cake"></i>
+      <span>Sweet Bakery</span>
     </div>
-           
+    
     <nav class="nav-menu">
-      <a routerLink="/" 
-         routerLinkActive="active" 
-         [routerLinkActiveOptions]="{exact: true}" 
-         class="nav-link">Home</a>
-      <a routerLink="/about" 
-         routerLinkActive="active" 
-         class="nav-link">About</a>
-      <a routerLink="/products" 
-         routerLinkActive="active" 
-         class="nav-link">Products</a>
-      <a routerLink="/contact" 
-         routerLinkActive="active" 
-         class="nav-link">Contact</a>
+      <a href="/" class="nav-link">Home</a>
+      <a href="/products" class="nav-link">Products</a>
+      <a href="/about" class="nav-link">About</a>
+      <a href="/contact" class="nav-link">Contact</a>
     </nav>
-           
-    <div class="nav-actions">
-      <button class="btn-outline">Sign In</button>
-      <button class="btn-primary">Dashboard</button>
+    
+    <!-- Auth and Cart Section -->
+    <div class="header-actions">
+      <!-- Search Bar for logged in users -->
+      <div class="search-container">
+        <input type="text" placeholder="Search products..." class="search-input">
+        <button class="search-button">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+
+      <!-- Cart Icon -->
+      <div class="cart-container">
+        <button class="cart-button" (click)="toggleCartModal()">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count" *ngIf="cartCount > 0">{{cartCount}}</span>
+        </button>
+      </div>
+
+      <!-- Notifications for logged in users -->
+      <div class="notification-container" *ngIf="isLoggedIn">
+        <button class="notification-button">
+          <i class="fas fa-bell"></i>
+          <span class="notification-badge" *ngIf="notificationCount > 0">{{notificationCount}}</span>
+        </button>
+      </div>
+
+      <!-- Auth Buttons for non-logged users -->
+      <div class="auth-buttons" *ngIf="!isLoggedIn">
+        <button class="btn-sign-in" (click)="signIn()">Sign In</button>
+        <button class="btn-register" (click)="register()">Register</button>
+      </div>
+
+      <!-- User Profile for logged in users -->
+      <div class="profile-container" *ngIf="isLoggedIn && userInfo">
+        <button class="profile-button" (click)="toggleProfileDropdown()">
+          <div class="profile-avatar">{{ userInfo.name.charAt(0).toUpperCase() }}</div>
+          <span class="profile-name">{{ userInfo.name }}</span>
+          <i class="fas fa-chevron-down dropdown-arrow"></i>
+        </button>
+
+        <!-- Profile Dropdown -->
+        <div class="profile-dropdown" *ngIf="showProfileDropdown">
+
+          <button class="dropdown-item" routerLink="/user-dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+            Dashboard
+          </button>
+
+          <button class="dropdown-item" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Modal -->
+  <div class="cart-modal-overlay" *ngIf="showCartModal" (click)="closeCartModal()">
+    <div class="cart-modal" (click)="$event.stopPropagation()">
+      <div class="cart-modal-header">
+        <h3>Shopping Cart</h3>
+        <button class="close-button" (click)="closeCartModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="cart-modal-content">
+        <div *ngIf="cartItems.length === 0" class="empty-cart">
+          <i class="fas fa-shopping-cart"></i>
+          <p>Your cart is empty</p>
+        </div>
+
+        <div *ngIf="cartItems.length > 0">
+          <div class="cart-item" *ngFor="let item of cartItems">
+            <div class="item-image">
+              <img [src]="item.base64Image" [alt]="item.name" />
+            </div>
+            <div class="item-details">
+              <h4>{{item.name}}</h4>
+              <p class="item-price">{{formatPrice(item.price)}}</p>
+            </div>
+            <div class="quantity-controls">
+              <button 
+                class="quantity-btn" 
+                (click)="updateQuantity(item.id, item.quantity - 1)"
+                [disabled]="item.quantity <= 1"
+              >
+                <i class="fas fa-minus"></i>
+              </button>
+              <span class="quantity">{{item.quantity}}</span>
+              <button 
+                class="quantity-btn" 
+                (click)="updateQuantity(item.id, item.quantity + 1)"
+                [disabled]="item.quantity >= item.stock"
+              >
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <div class="item-total">
+              {{formatPrice(item.price * item.quantity)}}
+            </div>
+            <button class="remove-btn" (click)="removeFromCart(item.id)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cart-modal-footer" *ngIf="cartItems.length > 0">
+        <div class="cart-total">
+          <strong>Total: {{formatPrice(cartTotal)}}</strong>
+        </div>
+        <div class="cart-actions">
+          <button class="btn-clear" (click)="clearCart()">Clear Cart</button>
+          <button class="btn-checkout" (click)="checkout()">Checkout</button>
+        </div>
+      </div>
     </div>
   </div>
 </header>
