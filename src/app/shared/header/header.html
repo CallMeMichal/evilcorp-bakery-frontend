@@ -15,26 +15,10 @@
     <!-- Auth and Cart Section -->
     <div class="header-actions">
       <!-- Search Bar for logged in users -->
-      <div class="search-container">
+      <div class="search-container" *ngIf="isLoggedIn">
         <input type="text" placeholder="Search products..." class="search-input">
         <button class="search-button">
           <i class="fas fa-search"></i>
-        </button>
-      </div>
-
-      <!-- Cart Icon -->
-      <div class="cart-container">
-        <button class="cart-button" (click)="toggleCartModal()">
-          <i class="fas fa-shopping-cart"></i>
-          <span class="cart-count" *ngIf="cartCount > 0">{{cartCount}}</span>
-        </button>
-      </div>
-
-      <!-- Notifications for logged in users -->
-      <div class="notification-container" *ngIf="isLoggedIn">
-        <button class="notification-button">
-          <i class="fas fa-bell"></i>
-          <span class="notification-badge" *ngIf="notificationCount > 0">{{notificationCount}}</span>
         </button>
       </div>
 
@@ -44,27 +28,23 @@
         <button class="btn-register" (click)="register()">Register</button>
       </div>
 
+      <!-- Cart Icon -->
+      <div class="cart-container" *ngIf="isLoggedIn">
+        <button class="cart-button" (click)="toggleCartModal()">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count" *ngIf="cartCount > 0">{{cartCount}}</span>
+        </button>
+      </div>
+
       <!-- User Profile for logged in users -->
       <div class="profile-container" *ngIf="isLoggedIn && userInfo">
-        <button class="profile-button" (click)="toggleProfileDropdown()">
+        <button class="profile-button" routerLink="/user-dashboard">
           <div class="profile-avatar">{{ userInfo.name.charAt(0).toUpperCase() }}</div>
-          <span class="profile-name">{{ userInfo.name }}</span>
-          <i class="fas fa-chevron-down dropdown-arrow"></i>
+          <div class="profile-info">
+            <span class="profile-name">{{ userInfo.name }} {{ userInfo.surname }}</span>
+            <span class="profile-role">{{ userInfo.role }}</span>
+          </div>
         </button>
-
-        <!-- Profile Dropdown -->
-        <div class="profile-dropdown" *ngIf="showProfileDropdown">
-
-          <button class="dropdown-item" routerLink="/user-dashboard">
-            <i class="fas fa-tachometer-alt"></i>
-            Dashboard
-          </button>
-
-          <button class="dropdown-item" (click)="logout()">
-            <i class="fas fa-sign-out-alt"></i>
-            Logout
-          </button>
-        </div>
       </div>
     </div>
   </div>

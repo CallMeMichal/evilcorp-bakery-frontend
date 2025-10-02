@@ -1,0 +1,189 @@
+<div class="orders-page-wrapper">
+  <div class="orders-container">
+    
+    <!-- Header with Stats -->
+    <div class="page-header">
+      <div class="header-title">
+        <h1>My Orders</h1>
+        <p class="subtitle">Track your bakery orders and view order history</p>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <i class="fas fa-shopping-bag"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Total Orders</div>
+          <div class="stat-value">{{ orders.length }}</div>
+          <div class="stat-sublabel">Since joining</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon yellow">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Active Orders</div>
+          <div class="stat-value">{{ orders.length }}</div>
+          <div class="stat-sublabel">In progress</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon orange">
+          <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Total Spent</div>
+          <div class="stat-value">{{ formatPrice(getTotalSpent()) }}</div>
+          <div class="stat-sublabel">Lifetime value</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order History Header -->
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Order History</h2>
+        <div class="filters">
+          <select class="filter-select">
+            <option>All Orders</option>
+            <option>Processing</option>
+            <option>Ready</option>
+            <option>Completed</option>
+            <option>Cancelled</option>
+          </select>
+          <select class="filter-select">
+            <option>Last 30 days</option>
+            <option>Last 7 days</option>
+            <option>Last 90 days</option>
+            <option>All time</option>
+          </select>
+        </div>
+      </div>
+      <button class="new-order-btn" routerLink="/products">
+        <i class="fas fa-plus"></i> New Order
+      </button>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading your orders...</p>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="error && !isLoading" class="error-state">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="loadOrders()">
+        <i class="fas fa-redo"></i> Retry
+      </button>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!isLoading && !error && orders.length === 0" class="empty-state">
+      <i class="fas fa-shopping-bag"></i>
+      <h2>No orders yet</h2>
+      <p>Start shopping to see your orders here</p>
+      <a routerLink="/products" class="shop-btn">
+        <i class="fas fa-shopping-cart"></i> Start Shopping
+      </a>
+    </div>
+
+    <!-- Orders List -->
+    <div *ngIf="!isLoading && !error && orders.length > 0" class="orders-section">
+      
+      <div class="orders-list">
+        <div *ngFor="let order of paginatedOrders" class="order-card">
+          
+          <!-- Order Header -->
+          <div class="order-card-header">
+            <div class="order-meta">
+              <h3 class="order-number">Order #ORD-2024-{{ order.id.toString().padStart(3, '0') }}</h3>
+              <p class="order-datetime">Placed on {{ formatDate(order.createdAt) }} at {{ formatTime(order.createdAt) }}</p>
+            </div>
+            <div class="order-status-price">
+              <span class="status-badge status-processing">Processing</span>
+              <div class="order-total">
+                <span class="total-amount">{{ formatPrice(order.totalAmount) }}</span>
+                <span class="items-count">{{ getOrderItemsCount(order) }} items</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Items -->
+          <div class="order-items">
+            <div *ngFor="let item of order.items" class="order-item">
+              <!-- ZMIENIONE - Klikalne zdjęcie produktu -->
+              <img 
+                [src]="getImageSrc(item.productDTO.base64Image)" 
+                [alt]="item.productDTO.name"
+                class="item-image clickable"
+                (click)="navigateToProduct(item.productDTO.id)"
+                (error)="$any($event.target).src='assets/placeholder.jpg'"
+              />
+              <div class="item-details">
+                <!-- ZMIENIONE - Klikalna nazwa produktu -->
+                <h4 class="item-name clickable" (click)="navigateToProduct(item.productDTO.id)">
+                  {{ item.productDTO.name }}
+                </h4>
+                <p class="item-quantity">Quantity: {{ item.quantity }} × {{ formatPrice(item.unitPrice) }}</p>
+              </div>
+              <div class="item-price">{{ formatPrice(item.subtotal) }}</div>
+            </div>
+          </div>
+
+          <!-- Order Footer -->
+          <div class="order-card-footer">
+            <div class="order-info">
+              <i class="fas fa-clock"></i>
+              <span>Estimated ready: 15-20 min</span>
+              <i class="fas fa-map-marker-alt"></i>
+              <span>Pickup at store</span>
+            </div>
+            <div class="order-actions">
+              <button class="action-btn secondary">
+                <i class="far fa-eye"></i> View Details
+              </button>
+              <button class="action-btn danger">
+                <i class="fas fa-times"></i> Cancel
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button 
+          class="pagination-btn" 
+          [disabled]="currentPage === 1"
+          (click)="goToPage(currentPage - 1)">
+          <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        
+        <button 
+          *ngFor="let page of getVisiblePages()"
+          class="pagination-btn page-number"
+          [class.active]="page === currentPage"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+        
+        <button 
+          class="pagination-btn"
+          [disabled]="currentPage === totalPages"
+          (click)="goToPage(currentPage + 1)">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

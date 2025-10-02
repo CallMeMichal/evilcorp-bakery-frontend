@@ -41,7 +41,6 @@ export class HomePage implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading products:', error);
         this.isLoading = false;
       }
     });

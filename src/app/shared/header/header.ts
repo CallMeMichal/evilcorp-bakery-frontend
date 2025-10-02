@@ -1,13 +1,12 @@
-// src/app/shared/header/header.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CartService } from '../../../core/services/cart.service';
-import { Router,RouterModule } from '@angular/router';
-import { AuthService } from '../../../core/services/auth/auth.service';
+import { CartService } from '../../core/services/cart.service';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-header',
-  imports: [CommonModule,RouterModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './header.html',
   styleUrl: './header.scss'
 })
@@ -17,12 +16,9 @@ export class Header implements OnInit {
   cartItems: any[] = [];
   cartTotal = 0;
 
- // Auth properties
+  // Auth properties
   isLoggedIn = false;
-  userInfo: { name: string; role: string } | null = null;
-  showProfileDropdown = false;
-  notificationCount = 1; // Mock notification count
-
+  userInfo: { name: string; surname:string; role: string } | null = null;
 
   constructor(
     private router: Router,
@@ -46,10 +42,8 @@ export class Header implements OnInit {
     this.checkAuthStatus();
   }
 
-
   private checkAuthStatus(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
-    console.log(this.isLoggedIn);
     if (this.isLoggedIn) {
       this.userInfo = this.authService.getUserInfo();
     }
@@ -93,18 +87,5 @@ export class Header implements OnInit {
 
   checkout(): void {
     this.router.navigate(['/checkout']);
-  }
-
-
-  logout(): void {
-    this.authService.logout();
-    this.isLoggedIn = false;
-    this.userInfo = null;
-    this.showProfileDropdown = false;
-    this.router.navigate(['/']);
-  }
-
-  toggleProfileDropdown(): void {
-    this.showProfileDropdown = !this.showProfileDropdown;
   }
 }

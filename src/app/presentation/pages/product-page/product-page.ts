@@ -70,7 +70,6 @@ export class ProductPage implements OnInit {
   private loadProducts(): void {
     this.productService.getProducts().subscribe({
       next: (products) => {
-        console.log(products);
         this.products = products;
         this.allProducts = products;
         this.isLoading = false;

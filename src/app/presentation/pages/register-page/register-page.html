@@ -115,7 +115,7 @@
             </div>
           </div>
 
-          <!-- Date of Birth - Compact -->
+          <!-- Date of Birth -->
           <div class="form-group">
             <label for="dateOfBirth">Birthday</label>
             <p class="field-note">Get a special birthday treat!</p>
@@ -131,39 +131,14 @@
             </div>
           </div>
 
-          <!-- Dietary Preferences - Compact -->
-          <div class="form-section">
-            <h3>Dietary Preferences <span class="optional">(Optional)</span></h3>
-            <div class="checkbox-grid">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" [(ngModel)]="vegan" name="vegan" />
-                <span class="checkmark"></span>
-                Vegan
-              </label>
-              <label class="checkbox-wrapper">
-                <input type="checkbox" [(ngModel)]="glutenFree" name="glutenFree" />
-                <span class="checkmark"></span>
-                Gluten-Free
-              </label>
-              <label class="checkbox-wrapper">
-                <input type="checkbox" [(ngModel)]="sugarFree" name="sugarFree" />
-                <span class="checkmark"></span>
-                Sugar-Free
-              </label>
-              <label class="checkbox-wrapper">
-                <input type="checkbox" [(ngModel)]="keto" name="keto" />
-                <span class="checkmark"></span>
-                Keto
-              </label>
-            </div>
-          </div>
-
           <!-- Agreement -->
-          <div class="form-section">
-            <label class="checkbox-wrapper agreement">
+          <div class="terms-section">
+            <label class="terms-checkbox">
               <input type="checkbox" [(ngModel)]="agreeToTerms" name="agreeToTerms" required />
               <span class="checkmark"></span>
-              I agree to <a href="#" class="link">Terms</a> and <a href="#" class="link">Privacy Policy</a>
+              <span class="terms-text">
+                I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a>
+              </span>
             </label>
           </div>
 

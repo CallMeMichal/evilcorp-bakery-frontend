@@ -18,10 +18,6 @@ export class ProductService {
     );
   }
 
-
-  
-
-
     getProductSuggestions(query: string): Observable<Product[]> {
     if (!query || query.length < 1) {
       return of([]);
@@ -36,6 +32,12 @@ export class ProductService {
   searchProducts(query: string): Observable<Product[]> {
     return this.http.get<any>(`${this.apiUrl}/suggestions?query=${query}`).pipe(
       map(response => response.data || [])
+    );
+  }
+
+  getProductById(id: number): Observable<Product> {
+    return this.http.get<any>(`${this.apiUrl}/specified/${id}`).pipe(
+      map((response: any) => response.data as Product)
     );
   }
 }

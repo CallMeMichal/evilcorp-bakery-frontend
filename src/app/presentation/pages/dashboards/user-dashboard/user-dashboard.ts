@@ -1,14 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SharedModule } from '../../../../shared/shared.module';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-user-dashboard',
-  imports: [CommonModule, SharedModule],
+  standalone: true,
+  imports: [CommonModule, SharedModule, RouterOutlet],
   templateUrl: './user-dashboard.html',
   styleUrl: './user-dashboard.scss'
 })
-export class UserDashboard {
+export class UserDashboard implements OnInit {
 
+  ngOnInit() {
+   
+  }
 }
-

@@ -6,7 +6,6 @@ import { ApplicationRef, createComponent, EnvironmentInjector, ComponentRef } fr
 import { SessionExpiredModal } from '../../../presentation/pages/modals/session-expired-modal/session-expired-modal';
 import { UnauthorizedModal } from '../../../presentation/pages/modals/unauthorized-modal/unauthorized-modal';
 
-// Zmienne globalne do przechowywania referencji do modali
 let sessionExpiredModalRef: ComponentRef<SessionExpiredModal> | null = null;
 let unauthorizedModalRef: ComponentRef<UnauthorizedModal> | null = null;
 
@@ -26,9 +25,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      console.log(error);
-
-      // 401 - Token expired/invalid
       if (error.status === 401) {
         const errorResponse = error.error;
         
@@ -50,7 +46,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
 
-      // 403 - Forbidden (brak uprawnień)
       if (error.status === 403) {
         const errorResponse = error.error;
         
@@ -71,7 +66,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 
-// Funkcja do ukrywania modala sesji
+
 export function hideSessionExpiredModal(appRef: ApplicationRef): void {
   if (sessionExpiredModalRef) {
     appRef.detachView(sessionExpiredModalRef.hostView);
@@ -80,7 +75,6 @@ export function hideSessionExpiredModal(appRef: ApplicationRef): void {
   }
 }
 
-// Funkcja do ukrywania modala unauthorized
 export function hideUnauthorizedModal(appRef: ApplicationRef): void {
   if (unauthorizedModalRef) {
     appRef.detachView(unauthorizedModalRef.hostView);

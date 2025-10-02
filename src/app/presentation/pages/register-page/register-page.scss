@@ -155,53 +155,20 @@
         }
       }
 
-      .password-strength {
-        font-family: 'Inter', sans-serif;
-        font-size: 0.75rem;
-        margin-bottom: 0.75rem;
-        color: #666;
+      .terms-section {
+        margin: 1.25rem 0;
+        padding: 1rem;
+        background: #fff7f4;
+        border: 1px solid #ffe8df;
+        border-radius: 8px;
 
-        .strength-weak { color: #dc3545; }
-        .strength-medium { color: #ffc107; }
-        .strength-strong { color: #28a745; }
-      }
-
-      .form-section {
-        margin-bottom: 1rem;
-
-        h3 {
-          font-family: 'Inter', sans-serif;
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: #2c2c2c;
-          margin-bottom: 0.5rem;
-
-          .optional {
-            font-weight: 400;
-            color: #666;
-            font-size: 0.8rem;
-          }
-        }
-
-        .checkbox-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0.5rem;
-        }
-
-        .checkbox-wrapper {
+        .terms-checkbox {
           font-family: 'Inter', sans-serif;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           cursor: pointer;
           position: relative;
-          font-size: 0.75rem;
-          color: #666;
-
-          &.agreement {
-            grid-column: 1 / -1;
-            margin-bottom: 0.5rem;
-          }
+          gap: 0.75rem;
 
           input[type="checkbox"] {
             opacity: 0;
@@ -210,43 +177,52 @@
           }
 
           .checkmark {
-            width: 14px;
-            height: 14px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            margin-right: 0.4rem;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ff6b35;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
             flex-shrink: 0;
+            background: white;
+            margin-top: 2px;
 
             &:after {
-              content: '';
-              width: 6px;
-              height: 6px;
-              background: #ff6b35;
-              border-radius: 1px;
+              content: '✓';
+              color: white;
+              font-size: 14px;
+              font-weight: bold;
               opacity: 0;
               transition: opacity 0.3s;
             }
           }
 
           input:checked ~ .checkmark {
+            background: #ff6b35;
             border-color: #ff6b35;
-            background: #fff7f4;
           }
 
           input:checked ~ .checkmark:after {
             opacity: 1;
           }
 
-          .link {
-            color: #ff6b35;
-            text-decoration: none;
+          .terms-text {
+            font-size: 0.875rem;
+            color: #2c2c2c;
+            line-height: 1.5;
 
-            &:hover {
-              text-decoration: underline;
+            .terms-link {
+              color: #ff6b35;
+              text-decoration: none;
+              font-weight: 500;
+              transition: all 0.2s;
+
+              &:hover {
+                color: #e55a2b;
+                text-decoration: underline;
+              }
             }
           }
         }
@@ -372,10 +348,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem; // Zmniejszone z 2rem
+  padding: 1.5rem;
   position: relative;
 
-  // Dodajemy subtelny wzór/teksturę
   &::before {
     content: '';
     position: absolute;
@@ -392,7 +367,7 @@
 
   .community-section {
     text-align: center;
-    max-width: 480px; // Zmniejszone z 550px
+    max-width: 480px;
     width: 100%;
     height: 100%;
     display: flex;
@@ -403,10 +378,10 @@
 
     .bakery-image {
       width: 100%;
-      height: 200px; // Zmniejszone z 250px
-      border-radius: 18px; // Zmniejszone z 20px
+      height: 200px;
+      border-radius: 18px;
       overflow: hidden;
-      margin-bottom: 1.5rem; // Zmniejszone z 2rem
+      margin-bottom: 1.5rem;
       box-shadow: 
         0 15px 30px rgba(0, 0, 0, 0.12),
         0 6px 15px rgba(255, 107, 53, 0.12);
@@ -422,35 +397,35 @@
     .community-content {
       h3 {
         font-family: 'Inter', sans-serif;
-        font-size: 1.7rem; // Zmniejszone z 2rem
+        font-size: 1.7rem;
         font-weight: 700;
         color: #2c2c2c;
-        margin-bottom: 0.75rem; // Zmniejszone z 1rem
+        margin-bottom: 0.75rem;
         text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
         line-height: 1.2;
       }
 
       p {
         font-family: 'Inter', sans-serif;
-        font-size: 1.05rem; // Zmniejszone z 1.2rem
+        font-size: 1.05rem;
         color: #666;
-        margin-bottom: 1.5rem; // Zmniejszone z 2rem
+        margin-bottom: 1.5rem;
         line-height: 1.5;
       }
 
       .benefits {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1.2rem; // Zmniejszone z 1.5rem
-        margin-bottom: 2rem; // Zmniejszone z 2.5rem
+        gap: 1.2rem;
+        margin-bottom: 2rem;
 
         .benefit {
           display: flex;
           align-items: center;
-          gap: 0.8rem; // Zmniejszone z 1rem
+          gap: 0.8rem;
           text-align: left;
-          padding: 0.8rem; // Zmniejszone z 1rem
-          border-radius: 10px; // Zmniejszone z 12px
+          padding: 0.8rem;
+          border-radius: 10px;
           background: rgba(255, 255, 255, 0.5);
           backdrop-filter: blur(12px);
           border: 1px solid rgba(255, 255, 255, 0.4);
@@ -461,8 +436,8 @@
           }
 
           .benefit-icon {
-            width: 42px; // Zmniejszone z 50px
-            height: 42px; // Zmniejszone z 50px
+            width: 42px;
+            height: 42px;
             background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
             border-radius: 50%;
             display: flex;
@@ -473,14 +448,14 @@
 
             i {
               color: white;
-              font-size: 1.1rem; // Zmniejszone z 1.3rem
+              font-size: 1.1rem;
             }
           }
 
           .benefit-text {
             h4 {
               font-family: 'Inter', sans-serif;
-              font-size: 0.9rem; // Zmniejszone z 1rem
+              font-size: 0.9rem;
               font-weight: 600;
               color: #2c2c2c;
               margin: 0 0 0.2rem;
@@ -488,7 +463,7 @@
 
             p {
               font-family: 'Inter', sans-serif;
-              font-size: 0.8rem; // Zmniejszone z 0.85rem
+              font-size: 0.8rem;
               color: #666;
               margin: 0;
               line-height: 1.3;
@@ -500,15 +475,15 @@
       .stats {
         display: flex;
         justify-content: center;
-        gap: 2rem; // Zmniejszone z 2.5rem
+        gap: 2rem;
 
         .stat {
-          padding: 1rem; // Zmniejszone z 1.25rem
-          border-radius: 10px; // Zmniejszone z 12px
+          padding: 1rem;
+          border-radius: 10px;
           background: rgba(255, 255, 255, 0.6);
           backdrop-filter: blur(12px);
           border: 1px solid rgba(255, 255, 255, 0.5);
-          min-width: 85px; // Zmniejszone z 100px
+          min-width: 85px;
           transition: transform 0.3s ease;
 
           &:hover {
@@ -517,10 +492,10 @@
 
           .stat-number {
             font-family: 'Inter', sans-serif;
-            font-size: 1.5rem; // Zmniejszone z 1.8rem
+            font-size: 1.5rem;
             font-weight: 700;
             color: #ff6b35;
-            margin-bottom: 0.4rem; // Zmniejszone z 0.5rem
+            margin-bottom: 0.4rem;
             text-shadow: 0 1px 3px rgba(255, 107, 53, 0.25);
             display: block;
           }
@@ -529,7 +504,7 @@
             font-family: 'Inter', sans-serif;
             color: #666;
             font-weight: 500;
-            font-size: 0.8rem; // Zmniejszone z 0.9rem
+            font-size: 0.8rem;
             line-height: 1.25;
           }
         }
@@ -567,7 +542,7 @@
         }
 
         .benefits {
-          display: none; // Hide on mobile to save space
+          display: none;
         }
 
         .stats {
@@ -598,8 +573,9 @@
           gap: 0;
         }
 
-        .form-section .checkbox-grid {
-          grid-template-columns: 1fr;
+        .terms-section {
+          margin: 1rem 0;
+          padding: 0.75rem;
         }
       }
     }
@@ -621,8 +597,9 @@
         margin-bottom: 0.5rem;
       }
 
-      .form-section {
-        margin-bottom: 0.75rem;
+      .terms-section {
+        margin: 0.75rem 0;
+        padding: 0.75rem;
       }
     }
   }

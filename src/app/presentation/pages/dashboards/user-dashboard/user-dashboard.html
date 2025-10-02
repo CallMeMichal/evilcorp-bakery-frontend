@@ -1,5 +1,16 @@
-<div class="page-container user-dashboard-container">
+<div class="dashboard-wrapper">
   <app-header></app-header>
-
-   <app-footer></app-footer>
+  
+  <div class="dashboard-layout">
+    <app-user-panel></app-user-panel>
+    
+    <div class="main-content">
+      <div class="content">
+        <!-- Router outlet dla zagnieżdżonych tras -->
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </div>
+  
+  <app-footer></app-footer>
 </div>

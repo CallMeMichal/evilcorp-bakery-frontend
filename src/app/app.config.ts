@@ -4,7 +4,7 @@ import { provideHttpClient, withInterceptors, HTTP_INTERCEPTORS } from '@angular
 
 
 
-import { SharedModule } from './shared/shared.module';
+import { SharedModule } from './shared/shared.module'; 
 import { CoreModule } from './core/core.module';
 import { routes } from './presentation/presentation-routing.module';
 import { authInterceptor } from './core/services/auth/auth.interceptor';

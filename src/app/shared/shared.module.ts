@@ -1,8 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Header } from './header/header/header';
-import { Footer } from './footer/footer/footer';
+import { Header } from './header/header'; 
+import { Footer } from './footer/footer';
+import { UserPanel } from './user-panel/user-panel';
 
 
 
@@ -12,12 +13,13 @@ import { Footer } from './footer/footer/footer';
     CommonModule,
     RouterModule,
     Header,
-    Footer
+    Footer,
+    UserPanel
   ],
   exports: [
     Header,
-    Footer
-
+    Footer,
+    UserPanel
   ]
 })
 export class SharedModule { }

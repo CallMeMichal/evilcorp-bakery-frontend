@@ -3,7 +3,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { SharedModule } from '../../../shared/shared.module';
+import { SharedModule } from '../../../shared/shared.module'; 
+import { AuthService } from '../../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-register-page',
@@ -33,41 +34,50 @@ export class RegisterPage {
   // Terms agreement
   agreeToTerms = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   onRegister(): void {
+
     if (this.password !== this.confirmPassword) {
       alert('Passwords do not match');
       return;
     }
 
+    // Walidacja zgody na regulamin
     if (!this.agreeToTerms) {
       alert('Please agree to the Terms of Service and Privacy Policy');
       return;
     }
 
-    console.log('Registration data:', {
-      firstName: this.firstName,
-      lastName: this.lastName,
-      email: this.email,
-      phoneNumber: this.phoneNumber,
-      dateOfBirth: this.dateOfBirth,
-      password: this.password,
-      dietaryPreferences: {
-        vegan: this.vegan,
-        glutenFree: this.glutenFree,
-        sugarFree: this.sugarFree,
-        keto: this.keto
+    // Przygotowanie FormData
+    const formData = new FormData();
+    formData.append('name', this.firstName);           
+    formData.append('surname', this.lastName);         
+    formData.append('email', this.email);
+    formData.append('phoneNumber', this.phoneNumber);
+    formData.append('dateOfBirth', this.dateOfBirth);
+    formData.append('password', this.password);
+    
+    console.log('FormData contents:');
+    formData.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
+
+    this.authService.register(formData).subscribe({
+      next: (success) => {
+        if (success) {
+          alert('Registration successful! Please sign in.');
+          this.router.navigate(['/signin']);
+        } else {
+          alert('Registration failed. Please try again.');
+        }
       },
-      notifications: {
-        email: this.emailUpdates,
-        sms: this.smsNotifications
+      error: (error) => {
+        console.error('Registration error:', error);
+        alert('An error occurred during registration. Please try again.');
       }
     });
 
-    // Implement registration logic here
-    // For now, navigate to signin
-    this.router.navigate(['/signin']);
   }
 
   onGoogleSignUp(): void {
