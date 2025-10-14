@@ -1,4 +1,4 @@
-// src/app/pages/auth/signin-page/signin-page.ts
+
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -22,14 +22,13 @@ export class SigninPage {
   constructor(private router: Router, private authService : AuthService) {}
 
     onSignIn(): void {
-    // Walidacja podstawowa
     if (!this.email || !this.password) {
       this.errorMessage = 'Please fill in all fields';
       return;
     }
 
     this.isLoading = true;
-    this.errorMessage = ''; // Wyczyść poprzednie błędy
+    this.errorMessage = '';
 
     this.authService.login(this.email, this.password)
       .subscribe({

@@ -19,10 +19,23 @@ export class OrderService {
     );
   }
 
-  // Pobierz zamówienie po ID
-  //getOrderById(id: number): Observable<Order> {
-  //  return this.http.get<ApiResponse<Order>>(`${this.apiUrl}/${id}`).pipe(
-  //    map(response => response.data?.[0] || {} as Order)
-  //  );
-  //}
+  createOrder(orderData: any): Observable<any> {
+      const payload = {
+          userId:orderData.userId,
+          deliveryMethod: orderData.deliveryMethod,
+          selectedAddressDto: orderData.selectedAddress,
+          paymentMethodId: orderData.paymentMethodId,
+          cartItems: orderData.cartItems.map((item: any) => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              base64Image: item.base64Image
+          })),
+          total: orderData.total,
+          notes: orderData.notes || null
+      };
+
+      return this.http.post<any>(`${this.apiUrl}/create`, payload);
+  }
 }

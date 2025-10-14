@@ -1,0 +1,153 @@
+<div class="page-container summary-container">
+  <app-header></app-header>
+
+  <section class="summary-section" *ngIf="orderData">
+    <div class="container">
+      <div class="summary-header">
+        <button class="back-button" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i>
+          Back to Checkout
+        </button>
+      </div>
+
+      <div class="summary-content">
+        <div class="summary-main">
+          <!-- Delivery Information -->
+          <div class="info-section">
+            <div class="section-header">
+              <i class="fas fa-shipping-fast"></i>
+              <h2>Delivery Information</h2>
+            </div>
+            <div class="info-content">
+              <div class="info-row">
+                <span class="label">Delivery Method:</span>
+                <span class="value">
+                  <span class="badge" [class.delivery]="orderData.deliveryMethod === 'delivery'" 
+                        [class.pickup]="orderData.deliveryMethod === 'pickup'">
+                    {{orderData.deliveryMethod === 'delivery' ? 'Home Delivery' : 'Store Pickup'}}
+                  </span>
+                </span>
+              </div>
+              
+              <div class="info-row" *ngIf="orderData.deliveryMethod === 'delivery' && orderData.selectedAddress">
+                <span class="label">Delivery Address:</span>
+                <div class="address-value">
+                  <p><strong>{{orderData.selectedAddress.label}}</strong></p>
+                  <p>{{orderData.selectedAddress.street}}</p>
+                  <p>{{orderData.selectedAddress.postalCode}} {{orderData.selectedAddress.city}}</p>
+                  <p>{{orderData.selectedAddress.country}}</p>
+                  <p>{{orderData.selectedAddress.phoneAreaCode}} {{orderData.selectedAddress.phoneNumber}}</p>
+                </div>
+              </div>
+
+              <div class="info-row" *ngIf="orderData.deliveryMethod === 'pickup'">
+                <span class="label">Pickup Location:</span>
+                <div class="address-value">
+                  <p><strong>Sweet Bakery - Main Store</strong></p>
+                  <p>ul. Cukiernicza 15</p>
+                  <p>00-123 Warszawa, Poland</p>
+                  <p class="phone">+48 22 123 45 67</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Information -->
+          <div class="info-section">
+            <div class="section-header">
+              <i class="fas fa-credit-card"></i>
+              <h2>Payment Method</h2>
+            </div>
+            <div class="info-content">
+              <div class="payment-method-display">
+                <i [class]="getPaymentIcon(orderData.paymentMethodId)"></i>
+                <span>{{getPaymentMethodName()}}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Notes -->
+            <div class="info-section" *ngIf="orderData.notes">
+            <div class="section-header">
+                <i class="fas fa-sticky-note"></i>
+                <h2>Order Notes</h2>
+            </div>
+            <div class="info-content">
+                <div class="notes-display">
+                <p>{{orderData.notes}}</p>
+                </div>
+            </div>
+            </div>
+
+          <!-- Order Items -->
+          <div class="info-section">
+            <div class="section-header">
+              <i class="fas fa-shopping-bag"></i>
+              <h2>Order Items</h2>
+            </div>
+            <div class="items-list">
+              <div class="summary-item" *ngFor="let item of orderData.cartItems">
+                <div class="item-image">
+                  <img [src]="item.base64Image" [alt]="item.name" />
+                </div>
+                <div class="item-info">
+                  <h3>{{item.name}}</h3>
+                  <p class="item-quantity">Quantity: {{item.quantity}}</p>
+                  <p class="item-price">{{formatPrice(item.price)}} each</p>
+                </div>
+                <div class="item-total">
+                  {{formatPrice(item.price * item.quantity)}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Panel -->
+        <div class="payment-panel">
+          <div class="order-total-section">
+            <h2>Order Total</h2>
+            
+            <div class="total-breakdown">
+              <div class="total-row">
+                <span>Subtotal:</span>
+                <span>{{formatPrice(orderData.subtotal)}}</span>
+              </div>
+              <div class="total-row" *ngIf="orderData.deliveryMethod === 'delivery'">
+                <span>Shipping:</span>
+                <span>{{formatPrice(orderData.shipping)}}</span>
+              </div>
+              <div class="total-row total-final">
+                <span><strong>Total:</strong></span>
+                <span><strong>{{formatPrice(orderData.total)}}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <button 
+            class="pay-now-btn" 
+            (click)="confirmPayment()" 
+            [disabled]="isProcessing">
+            <i class="fas fa-lock"></i>
+            <span *ngIf="!isProcessing">Complete Payment</span>
+            <span *ngIf="isProcessing">
+              <i class="fas fa-spinner fa-spin"></i> Processing...
+            </span>
+          </button>
+
+          <div class="security-info">
+            <i class="fas fa-shield-alt"></i>
+            <p>Your payment is secure and encrypted</p>
+          </div>
+
+          <div class="payment-info">
+            <p><i class="fas fa-info-circle"></i> You will be charged {{formatPrice(orderData.total)}}</p>
+            <p><i class="fas fa-check-circle"></i> Order confirmation will be sent to your email</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <app-footer></app-footer>
+</div>

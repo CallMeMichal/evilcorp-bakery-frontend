@@ -10,6 +10,8 @@ import { UserDashboard } from './pages/dashboards/user-dashboard/user-dashboard'
 import { AdminDashboard } from './pages/dashboards/admin-dashboard/admin-dashboard';
 import { OrdersPage } from './pages/dashboards/bookmarks/orders-page/orders-page';
 import { SingleProductPage } from './pages/single-product-page/single-product-page';
+import { SummaryPage } from './pages/summary-page/summary-page';
+import { OverviewPage } from './pages/dashboards/bookmarks/overview-page/overview-page';
 
 export const routes: Routes = [
     { path: '', component: HomePage },
@@ -22,12 +24,13 @@ export const routes: Routes = [
     { path: 'admin-dashboard', component: AdminDashboard },
     { path: 'orders', component:OrdersPage},
     { path: 'products/:id', component:SingleProductPage},
+    { path: 'summary', component:SummaryPage},
     { 
         path: 'user-dashboard', 
         component: UserDashboard, 
         children: [
-            //{ path: 'overview', component: UserDashboard },
-            { path: 'orders', component: OrdersPage }
+            { path: 'orders', component: OrdersPage },
+            { path: 'overview', component: OverviewPage },
         ]
     },
 ];

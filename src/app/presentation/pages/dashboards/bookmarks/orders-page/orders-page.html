@@ -28,7 +28,7 @@
         </div>
         <div class="stat-content">
           <div class="stat-label">Active Orders</div>
-          <div class="stat-value">{{ orders.length }}</div>
+          <div class="stat-value">{{ getActiveOrdersCount() }}</div>
           <div class="stat-sublabel">In progress</div>
         </div>
       </div>
@@ -49,20 +49,43 @@
     <div class="section-header">
       <div class="section-title">
         <h2>Order History</h2>
-        <div class="filters">
-          <select class="filter-select">
-            <option>All Orders</option>
-            <option>Processing</option>
-            <option>Ready</option>
-            <option>Completed</option>
-            <option>Cancelled</option>
-          </select>
-          <select class="filter-select">
-            <option>Last 30 days</option>
-            <option>Last 7 days</option>
-            <option>Last 90 days</option>
-            <option>All time</option>
-          </select>
+        <div class="filter-tags">
+          <button 
+            class="filter-tag" 
+            [class.active]="activeFilter === 'all'"
+            (click)="filterOrders('all')">
+            All Orders
+          </button>
+          <button 
+            class="filter-tag" 
+            [class.active]="activeFilter === 'pending'"
+            (click)="filterOrders('pending')">
+            Pending
+          </button>
+          <button 
+            class="filter-tag" 
+            [class.active]="activeFilter === 'processing'"
+            (click)="filterOrders('processing')">
+            Processing
+          </button>
+          <button 
+            class="filter-tag" 
+            [class.active]="activeFilter === 'shipped'"
+            (click)="filterOrders('shipped')">
+            Shipped
+          </button>
+          <button 
+            class="filter-tag" 
+            [class.active]="activeFilter === 'completed'"
+            (click)="filterOrders('completed')">
+            Completed
+          </button>
+          <button 
+            class="filter-tag" 
+            [class.active]="activeFilter === 'cancelled'"
+            (click)="filterOrders('cancelled')">
+            Cancelled
+          </button>
         </div>
       </div>
       <button class="new-order-btn" routerLink="/products">
@@ -86,17 +109,18 @@
     </div>
 
     <!-- Empty state -->
-    <div *ngIf="!isLoading && !error && orders.length === 0" class="empty-state">
+    <div *ngIf="!isLoading && !error && filteredOrders.length === 0" class="empty-state">
       <i class="fas fa-shopping-bag"></i>
-      <h2>No orders yet</h2>
-      <p>Start shopping to see your orders here</p>
+      <h2>No orders found</h2>
+      <p *ngIf="activeFilter === 'all'">Start shopping to see your orders here</p>
+      <p *ngIf="activeFilter !== 'all'">No {{ activeFilter }} orders found</p>
       <a routerLink="/products" class="shop-btn">
         <i class="fas fa-shopping-cart"></i> Start Shopping
       </a>
     </div>
 
     <!-- Orders List -->
-    <div *ngIf="!isLoading && !error && orders.length > 0" class="orders-section">
+    <div *ngIf="!isLoading && !error && filteredOrders.length > 0" class="orders-section">
       
       <div class="orders-list">
         <div *ngFor="let order of paginatedOrders" class="order-card">
@@ -104,11 +128,13 @@
           <!-- Order Header -->
           <div class="order-card-header">
             <div class="order-meta">
-              <h3 class="order-number">Order #ORD-2024-{{ order.id.toString().padStart(3, '0') }}</h3>
+              <h3 class="order-number">{{ order.orderGuid }}</h3>
               <p class="order-datetime">Placed on {{ formatDate(order.createdAt) }} at {{ formatTime(order.createdAt) }}</p>
             </div>
             <div class="order-status-price">
-              <span class="status-badge status-processing">Processing</span>
+              <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+                {{ order.status }}
+              </span>
               <div class="order-total">
                 <span class="total-amount">{{ formatPrice(order.totalAmount) }}</span>
                 <span class="items-count">{{ getOrderItemsCount(order) }} items</span>
@@ -116,10 +142,19 @@
             </div>
           </div>
 
+          <!-- Order Notes (if exists) -->
+          <div *ngIf="order.notes && order.notes.trim()" class="order-notes">
+            <i class="fas fa-sticky-note"></i>
+            <div class="notes-content">
+              <span class="notes-label">Order Notes:</span>
+              <span class="notes-text">{{ order.notes }}</span>
+            </div>
+          </div>
+
           <!-- Order Items -->
           <div class="order-items">
             <div *ngFor="let item of order.items" class="order-item">
-              <!-- ZMIENIONE - Klikalne zdjęcie produktu -->
+              <!-- Klikalne zdjęcie produktu -->
               <img 
                 [src]="getImageSrc(item.productDTO.base64Image)" 
                 [alt]="item.productDTO.name"
@@ -128,7 +163,7 @@
                 (error)="$any($event.target).src='assets/placeholder.jpg'"
               />
               <div class="item-details">
-                <!-- ZMIENIONE - Klikalna nazwa produktu -->
+                <!-- Klikalna nazwa produktu -->
                 <h4 class="item-name clickable" (click)="navigateToProduct(item.productDTO.id)">
                   {{ item.productDTO.name }}
                 </h4>

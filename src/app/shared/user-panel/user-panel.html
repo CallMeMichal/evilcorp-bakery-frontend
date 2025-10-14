@@ -3,7 +3,8 @@
     <a 
       *ngIf="hasAccess('overview')"
       class="nav-item" 
-      [class.active]="activeTab === 'overview'"
+      routerLink="/user-dashboard/overview"
+      routerLinkActive="active"
       (click)="setActiveTab('overview')">
       <i class="fas fa-chart-bar"></i>
       <span>Overview</span>

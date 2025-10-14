@@ -40,4 +40,14 @@ export class ProductService {
       map((response: any) => response.data as Product)
     );
   }
+
+
+  getCategories(): Observable<string[]> {
+  return this.getProducts().pipe(
+    map(products => {
+      const categories = products.map(p => p.category);
+      return [...new Set(categories)].sort(); // Unikalne kategorie, posortowane
+    })
+  );
+}
 }

@@ -72,12 +72,20 @@
 
           <div class="product-meta">
             <div class="meta-item">
-              <i class="fas fa-tag"></i>
-              <span>Category: Bakery</span>
+              <i class="fas fa-layer-group"></i>
+              <div class="meta-details">
+                <span class="meta-label">Category</span>
+                <span class="meta-value">{{ product.category }}</span>
+              </div>
             </div>
             <div class="meta-item">
-              <i class="fas fa-box"></i>
-              <span>SKU: PRD-{{ product.id }}</span>
+              <i class="fas fa-warehouse"></i>
+              <div class="meta-details">
+                <span class="meta-label">Available Stock</span>
+                <span class="meta-value" [ngClass]="getStockClass()">
+                  {{ product.stock }} units
+                </span>
+              </div>
             </div>
           </div>
 

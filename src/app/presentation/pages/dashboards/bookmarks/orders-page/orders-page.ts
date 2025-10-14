@@ -16,10 +16,12 @@ import { Router } from '@angular/router';
 })
 export class OrdersPage implements OnInit {
   orders: Order[] = [];
+  filteredOrders: Order[] = [];
   paginatedOrders: Order[] = [];
   isLoading = false;
   error: string | null = null;
   userId: number | null = null;
+  activeFilter: string = 'all';
   
   // Pagination
   currentPage = 1;
@@ -58,8 +60,7 @@ export class OrdersPage implements OnInit {
         this.orders = orders.sort((a, b) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        this.totalPages = Math.ceil(this.orders.length / this.itemsPerPage);
-        this.updatePaginatedOrders();
+        this.applyFilter();
         this.isLoading = false;
       },
       error: (error) => {
@@ -70,10 +71,29 @@ export class OrdersPage implements OnInit {
     });
   }
 
+  filterOrders(status: string) {
+    this.activeFilter = status;
+    this.currentPage = 1;
+    this.applyFilter();
+  }
+
+  applyFilter() {
+    if (this.activeFilter === 'all') {
+      this.filteredOrders = [...this.orders];
+    } else {
+      this.filteredOrders = this.orders.filter(order => 
+        order.status.toLowerCase() === this.activeFilter.toLowerCase()
+      );
+    }
+    
+    this.totalPages = Math.ceil(this.filteredOrders.length / this.itemsPerPage);
+    this.updatePaginatedOrders();
+  }
+
   updatePaginatedOrders() {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedOrders = this.orders.slice(startIndex, endIndex);
+    this.paginatedOrders = this.filteredOrders.slice(startIndex, endIndex);
   }
 
   goToPage(page: number) {
@@ -104,6 +124,14 @@ export class OrdersPage implements OnInit {
     }
     
     return pages;
+  }
+
+  getActiveOrdersCount(): number {
+    return this.orders.filter(order => 
+      order.status.toLowerCase() === 'pending' || 
+      order.status.toLowerCase() === 'processing' ||
+      order.status.toLowerCase() === 'shipped'
+    ).length;
   }
 
   formatDate(date: Date | string): string {
@@ -144,7 +172,7 @@ export class OrdersPage implements OnInit {
     return `data:image/jpeg;base64,${base64Image}`;
   }
 
-    navigateToProduct(productId: number): void {
+  navigateToProduct(productId: number): void {
     this.router.navigate(['/products', productId]);
   }
 
@@ -153,5 +181,24 @@ export class OrdersPage implements OnInit {
       style: 'currency',
       currency: 'USD'
     }).format(price);
+  }
+
+  getStatusClass(status: string): string {
+    const statusName = status.toLowerCase();
+    
+    switch(statusName) {
+      case 'pending':
+        return 'status-pending';
+      case 'processing':
+        return 'status-processing';
+      case 'shipped':
+        return 'status-shipped';
+      case 'completed':
+        return 'status-completed';
+      case 'cancelled':
+        return 'status-cancelled';
+      default:
+        return 'status-pending';
+    }
   }
 }

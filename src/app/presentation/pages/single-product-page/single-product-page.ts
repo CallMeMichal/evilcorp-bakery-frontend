@@ -2,14 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // DODAJ TO
 import { SharedModule } from '../../../shared/shared.module';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { Product } from '../../../domain/product';
 
 @Component({
   selector: 'app-single-product-page',
-  imports: [SharedModule, CommonModule, FormsModule], // DODAJ FormsModule
+  imports: [SharedModule, CommonModule, FormsModule, RouterModule], // DODAJ FormsModule
   templateUrl: './single-product-page.html',
   styleUrl: './single-product-page.scss'
 })

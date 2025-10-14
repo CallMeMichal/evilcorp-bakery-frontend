@@ -16,10 +16,58 @@
     <div class="header-actions">
       <!-- Search Bar for logged in users -->
       <div class="search-container" *ngIf="isLoggedIn">
-        <input type="text" placeholder="Search products..." class="search-input">
-        <button class="search-button">
-          <i class="fas fa-search"></i>
-        </button>
+        <div class="search-input-wrapper">
+          <input 
+            #searchInput
+            type="text" 
+            placeholder="Search products..." 
+            class="search-input"
+            [(ngModel)]="searchQuery"
+            (input)="onSearchInput($event)"
+            (keydown)="onSearchKeyDown($event)"
+            (blur)="hideSuggestions()"
+            autocomplete="off"
+          />
+          <button 
+            class="search-button" 
+            (click)="performSearch()"
+            *ngIf="!isLoadingSuggestions"
+          >
+            <i class="fas fa-search"></i>
+          </button>
+          <div *ngIf="isLoadingSuggestions" class="search-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+          <button 
+            *ngIf="searchQuery && !isLoadingSuggestions" 
+            class="clear-search-btn"
+            (click)="clearSearch()"
+            type="button"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Suggestions Dropdown -->
+        <div class="search-suggestions" *ngIf="showSuggestions && suggestions.length > 0">
+          <div 
+            *ngFor="let suggestion of suggestions; let i = index"
+            class="suggestion-item"
+            [class.selected]="i === selectedSuggestionIndex"
+            (mousedown)="selectSuggestion(suggestion)"
+          >
+            <div class="suggestion-image">
+              <img [src]="suggestion.base64Image" [alt]="suggestion.name" />
+            </div>
+            <div class="suggestion-content">
+              <div class="suggestion-name">{{suggestion.name}}</div>
+              <div class="suggestion-price">{{formatPrice(suggestion.price)}}</div>
+            </div>
+            <div class="suggestion-stock" [class.out-of-stock]="suggestion.stock === 0">
+              <i class="fas" [class.fa-check]="suggestion.stock > 0" [class.fa-times]="suggestion.stock === 0"></i>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Auth Buttons for non-logged users -->
@@ -49,7 +97,7 @@
     </div>
   </div>
 
-  <!-- Cart Modal -->
+  <!-- Cart Modal (bez zmian) -->
   <div class="cart-modal-overlay" *ngIf="showCartModal" (click)="closeCartModal()">
     <div class="cart-modal" (click)="$event.stopPropagation()">
       <div class="cart-modal-header">

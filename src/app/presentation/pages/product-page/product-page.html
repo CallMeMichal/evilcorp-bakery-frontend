@@ -1,14 +1,15 @@
 <div class="page-container product-container">
   <app-header></app-header>
   
-  <!-- Products Section -->
   <section class="products-section">
     <div class="container">
       <div class="section-header">
         <h2>Our Products</h2>
         <p>Browse our complete collection of freshly baked goods</p>
-        
-        <!-- Search Container with Autocomplete -->
+      </div>
+
+      <!-- Modern Filter Bar -->
+      <div class="modern-filter-bar">
         <div class="search-container">
           <div class="search-input-wrapper">
             <i class="fas fa-search search-icon"></i>
@@ -16,7 +17,7 @@
               #searchInput
               type="text" 
               class="search-input"
-              placeholder="Search products by name..."
+              placeholder="Search products..."
               [(ngModel)]="searchQuery"
               (input)="onSearchInput($event)"
               (keydown)="onSearchKeyDown($event)"
@@ -32,13 +33,11 @@
               <i class="fas fa-times"></i>
             </button>
             
-            <!-- Loading spinner for suggestions -->
             <div *ngIf="isLoadingSuggestions" class="suggestions-loading">
               <i class="fas fa-spinner fa-spin"></i>
             </div>
           </div>
           
-          <!-- Suggestions Dropdown -->
           <div class="suggestions-dropdown" *ngIf="showSuggestions && suggestions.length > 0">
             <div 
               *ngFor="let suggestion of suggestions; let i = index"
@@ -59,8 +58,85 @@
             </div>
           </div>
         </div>
+
+        <!-- ZMIENIONY DROPDOWN - Multi-select -->
+        <div class="category-dropdown-container">
+          <button class="category-dropdown-btn" (click)="toggleDropdown()">
+            <i class="fas fa-layer-group"></i>
+            <span class="category-label">
+              {{ selectedCategories.length === 0 ? 'All Categories' : selectedCategories.length + ' selected' }}
+            </span>
+            <span class="category-count">{{allProducts.length}}</span>
+            <i class="fas fa-chevron-down dropdown-arrow" [class.rotated]="isDropdownOpen"></i>
+          </button>
+          
+          <div class="category-dropdown-menu" *ngIf="isDropdownOpen">
+            <!-- Clear All Option -->
+            <div 
+              class="category-dropdown-item clear-all-item"
+              *ngIf="selectedCategories.length > 0"
+              (click)="clearCategories()"
+            >
+              <span class="category-name">
+                <i class="fas fa-times-circle"></i>
+                Clear All Selections
+              </span>
+            </div>
+            
+            <!-- Category Items with Checkboxes -->
+            <div 
+              *ngFor="let category of categories"
+              class="category-dropdown-item"
+              [class.active]="isCategorySelected(category)"
+              (click)="toggleCategory(category)"
+            >
+              <div class="category-checkbox">
+                <i class="fas" [class.fa-check-square]="isCategorySelected(category)" [class.fa-square]="!isCategorySelected(category)"></i>
+              </div>
+              <span class="category-name">{{category}}</span>
+              <span class="category-badge">{{getCategoryCount(category)}}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <!-- Active Filters Display -->
+      <div class="active-filters" *ngIf="selectedCategories.length > 0 || searchQuery">
+        <div class="filter-tags">
+          <!-- Category Tags -->
+          <span class="filter-tag" *ngFor="let category of selectedCategories">
+            <i class="fas fa-tag"></i>
+            {{category}}
+            <button class="remove-filter" (click)="removeCategory(category)">
+              <i class="fas fa-times"></i>
+            </button>
+          </span>
+          
+          <!-- Search Tag -->
+          <span class="filter-tag" *ngIf="searchQuery">
+            <i class="fas fa-search"></i>
+            "{{searchQuery}}"
+            <button class="remove-filter" (click)="clearSearch()">
+              <i class="fas fa-times"></i>
+            </button>
+          </span>
+        </div>
+        <button class="clear-all-btn" (click)="clearFilters()">
+          <i class="fas fa-times-circle"></i>
+          Clear all
+        </button>
+      </div>
+
+      <!-- Results Info -->
+      <div class="results-info" *ngIf="!isLoading && filteredProducts.length > 0">
+        <p>
+          Showing {{(currentPage - 1) * itemsPerPage + 1}} - 
+          {{Math.min(currentPage * itemsPerPage, filteredProducts.length)}} 
+          of {{filteredProducts.length}} products
+        </p>
+      </div>
+
+      <!-- Products Display (bez zmian) -->
       <div class="products-loading" *ngIf="isLoading">
         <div class="loading-spinner">
           <i class="fas fa-spinner fa-spin"></i>
@@ -68,39 +144,90 @@
         </div>
       </div>
       
-      <!-- No results message -->
-      <div class="no-results" *ngIf="!isLoading && products.length === 0 && searchQuery">
+      <div class="no-results" *ngIf="!isLoading && products.length === 0 && (searchQuery || selectedCategories.length > 0)">
         <i class="fas fa-search"></i>
         <h3>No products found</h3>
-        <p>Try adjusting your search terms or <button class="link-button" (click)="clearSearch()">view all products</button></p>
+        <p>Try adjusting your filters or <button class="link-button" (click)="clearFilters()">view all products</button></p>
       </div>
 
-          <div class="products-grid" *ngIf="!isLoading && products.length > 0">
-      <div class="product-card" *ngFor="let product of products">
-        <div class="product-image">
-          <img [src]="product.base64Image" [alt]="product.name" />
-          <div class="stock-badge" 
-              [class.low-stock]="product.stock < 10" 
-              [class.out-of-stock]="product.stock === 0">
-            <span *ngIf="product.stock === 0">Out of Stock</span>
-            <span *ngIf="product.stock > 0 && product.stock < 10">Only {{product.stock}} left</span>
-            <span *ngIf="product.stock >= 10">In Stock</span>
+      <div class="products-grid" *ngIf="!isLoading && products.length > 0">
+        <div class="product-card" *ngFor="let product of products">
+          <div class="product-image clickable" (click)="navigateToProduct(product.id)">
+            <img [src]="product.base64Image" [alt]="product.name" />
+            <div class="stock-badge" 
+                [class.low-stock]="product.stock < 10" 
+                [class.out-of-stock]="product.stock === 0">
+              <span *ngIf="product.stock === 0">Out of Stock</span>
+              <span *ngIf="product.stock > 0 && product.stock < 10">Only {{product.stock}} left</span>
+              <span *ngIf="product.stock >= 10">In Stock</span>
+            </div>
           </div>
-        </div>
-        <div class="product-info">
-          <h3>{{product.name}}</h3>
-          <p class="product-description">{{product.description}}</p>
-          <div class="product-price">
-            <span class="price">{{formatPrice(product.price)}}</span>
+          <div class="product-info">
+            <h3 class="clickable" (click)="navigateToProduct(product.id)">{{product.name}}</h3>
+            <p class="product-description">{{product.description}}</p>
+            <div class="product-price">
+              <span class="price">{{formatPrice(product.price)}}</span>
+            </div>
+            <button class="btn-add-to-cart" [disabled]="product.stock === 0" (click)="addToCart(product)">
+              <i class="fas fa-cart-plus"></i>
+              <span *ngIf="product.stock > 0">Add to Cart</span>
+              <span *ngIf="product.stock === 0">Unavailable</span>
+            </button>
           </div>
-          <button class="btn-add-to-cart" [disabled]="product.stock === 0" (click)="addToCart(product)">
-            <i class="fas fa-cart-plus"></i>
-            <span *ngIf="product.stock > 0">Add to Cart</span>
-            <span *ngIf="product.stock === 0">Unavailable</span>
-          </button>
         </div>
       </div>
-    </div>
+
+      <!-- Pagination (bez zmian) -->
+      <div class="pagination-container" *ngIf="!isLoading && totalPages > 1">
+        <button 
+          class="pagination-btn pagination-prev" 
+          (click)="previousPage()"
+          [disabled]="currentPage === 1"
+        >
+          <i class="fas fa-chevron-left"></i>
+          Previous
+        </button>
+
+        <div class="pagination-numbers">
+          <button 
+            *ngIf="getVisiblePages()[0] > 1"
+            class="pagination-number"
+            (click)="goToPage(1)"
+          >
+            1
+          </button>
+          
+          <span *ngIf="getVisiblePages()[0] > 2" class="pagination-dots">...</span>
+
+          <button 
+            *ngFor="let page of getVisiblePages()"
+            class="pagination-number"
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)"
+          >
+            {{page}}
+          </button>
+
+          <span *ngIf="getVisiblePages()[getVisiblePages().length - 1] < totalPages - 1" class="pagination-dots">...</span>
+
+          <button 
+            *ngIf="getVisiblePages()[getVisiblePages().length - 1] < totalPages"
+            class="pagination-number"
+            (click)="goToPage(totalPages)"
+          >
+            {{totalPages}}
+          </button>
+        </div>
+
+        <button 
+          class="pagination-btn pagination-next" 
+          (click)="nextPage()"
+          [disabled]="currentPage === totalPages"
+        >
+          Next
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
     </div>
   </section>
   

@@ -1,0 +1,257 @@
+<div class="overview-wrapper">
+  <div class="overview-container">
+    
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <div class="welcome-content">
+        <h1 class="welcome-title">
+          {{ getGreeting() }}, {{ userInfo?.name }}! 👋
+        </h1>
+        <p class="welcome-subtitle">Here's your bakery dashboard overview</p>
+      </div>
+      <button class="new-order-btn" (click)="navigateToProducts()">
+        <i class="fas fa-plus"></i> Place New Order
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading your dashboard...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !isLoading" class="error-state">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="loadDashboardData()">
+        <i class="fas fa-redo"></i> Retry
+      </button>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="!isLoading && !error">
+      
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card" (click)="navigateToOrders()">
+          <div class="stat-icon blue">
+            <i class="fas fa-shopping-bag"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value">{{ totalOrders }}</div>
+            <div class="stat-sublabel">All time</div>
+          </div>
+          <div class="stat-trend" [class.positive]="getOrderTrend().isPositive" [class.negative]="!getOrderTrend().isPositive">
+            <i class="fas" [class.fa-arrow-up]="getOrderTrend().isPositive" [class.fa-arrow-down]="!getOrderTrend().isPositive"></i>
+            {{ getOrderTrend().percentage }}%
+          </div>
+        </div>
+
+        <div class="stat-card" (click)="navigateToOrders()">
+          <div class="stat-icon yellow">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Active Orders</div>
+            <div class="stat-value">{{ activeOrders }}</div>
+            <div class="stat-sublabel">In progress</div>
+          </div>
+          <div class="stat-badge" *ngIf="activeOrders > 0">
+            <span>{{ activeOrders }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon green">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Completed</div>
+            <div class="stat-value">{{ completedOrders }}</div>
+            <div class="stat-sublabel">Successfully delivered</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon orange">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Total Spent</div>
+            <div class="stat-value">{{ formatPrice(totalSpent) }}</div>
+            <div class="stat-sublabel">Lifetime value</div>
+          </div>
+          <div class="stat-trend" [class.positive]="getSpendingTrend().isPositive" [class.negative]="!getSpendingTrend().isPositive">
+            <i class="fas" [class.fa-arrow-up]="getSpendingTrend().isPositive" [class.fa-arrow-down]="!getSpendingTrend().isPositive"></i>
+            {{ getSpendingTrend().percentage }}%
+          </div>
+        </div>
+      </div>
+
+      <!-- Two Column Layout -->
+      <div class="two-column-layout">
+        
+        <!-- Left Column -->
+        <div class="left-column">
+          
+          <!-- Quick Actions -->
+          <div class="quick-actions-section">
+            <h2 class="section-title">Quick Actions</h2>
+            <div class="actions-grid">
+              <button class="action-card" (click)="navigateToProducts()">
+                <div class="action-icon">
+                  <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="action-content">
+                  <h3>Browse Products</h3>
+                  <p>Explore our bakery selection</p>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </button>
+
+              <button class="action-card" (click)="navigateToOrders()">
+                <div class="action-icon">
+                  <i class="fas fa-list"></i>
+                </div>
+                <div class="action-content">
+                  <h3>View All Orders</h3>
+                  <p>Track your order history</p>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </button>
+
+              <button class="action-card" routerLink="/user-dashboard/settings">
+                <div class="action-icon">
+                  <i class="fas fa-user-cog"></i>
+                </div>
+                <div class="action-content">
+                  <h3>Account Settings</h3>
+                  <p>Manage your profile</p>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Popular Products -->
+            <div class="popular-products-section">
+            <div class="section-header">
+                <h2 class="section-title">Popular This Week</h2>
+                <button class="view-all-link" (click)="navigateToProducts()">
+                View All <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoadingProducts" class="products-loading">
+                <div class="spinner-small"></div>
+                <p>Loading products...</p>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="products-grid" *ngIf="!isLoadingProducts && popularProducts.length > 0">
+                <div *ngFor="let product of popularProducts" class="product-card" (click)="navigateToProduct(product.id)">
+                <div class="product-badge">
+                    <i class="fas fa-fire"></i> Popular
+                </div>
+                <div class="product-image">
+                    <img 
+                    [src]="getImageSrc(product.base64Image)" 
+                    [alt]="product.name"
+                    (error)="$any($event.target).src='assets/placeholder.jpg'"
+                    />
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-description">{{ product.description }}</p>
+                    <div class="product-footer">
+                    <span class="product-price">{{ formatPrice(product.price) }}</span>
+                    <div class="product-stock" [class.low-stock]="product.stock < 10">
+                        <i class="fas fa-box"></i>
+                        <span>{{ product.stock }} left</span>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!isLoadingProducts && popularProducts.length === 0" class="empty-products">
+                <i class="fas fa-cookie-bite"></i>
+                <p>No products available</p>
+            </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-column">
+          
+          <!-- Activity Feed -->
+          <div class="activity-section">
+            <h2 class="section-title">Recent Activity</h2>
+            
+            <div class="activity-feed">
+              <div *ngFor="let activity of activities" class="activity-item">
+                <div class="activity-icon" [ngClass]="activity.iconColor">
+                  <i class="fas {{ activity.icon }}"></i>
+                </div>
+                <div class="activity-content">
+                  <h4 class="activity-title">{{ activity.title }}</h4>
+                  <p class="activity-description">{{ activity.description }}</p>
+                  <span class="activity-time">{{ activity.time }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account Info -->
+          <div class="account-info-section">
+            <h2 class="section-title">Account Information</h2>
+            
+            <div class="info-cards">
+              <div class="info-card">
+                <div class="info-icon">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="info-content">
+                  <div class="info-label">Average Order Value</div>
+                  <div class="info-value">{{ formatPrice(averageOrderValue) }}</div>
+                </div>
+              </div>
+
+              <div class="info-card">
+                <div class="info-icon">
+                  <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="info-content">
+                  <div class="info-label">Member Since</div>
+                  <div class="info-value">{{ formatDate(getMemberSinceDate()) }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Promotional Banner -->
+          <div class="promo-banner">
+            <div class="promo-icon">
+              <i class="fas fa-gift"></i>
+            </div>
+            <div class="promo-content">
+              <h3>Weekend Special! 🎉</h3>
+              <p>Get 20% off on all orders this weekend</p>
+            </div>
+            <button class="promo-btn" (click)="navigateToProducts()">
+              Order Now
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

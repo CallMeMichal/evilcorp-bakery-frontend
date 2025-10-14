@@ -13,6 +13,7 @@ import { RouterOutlet } from '@angular/router';
 export class UserDashboard implements OnInit {
 
   ngOnInit() {
+    window.scrollTo(0, 0);
    
   }
 }
