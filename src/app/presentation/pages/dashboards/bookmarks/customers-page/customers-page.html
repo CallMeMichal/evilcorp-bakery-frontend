@@ -1,0 +1,225 @@
+<div class="customers-page-wrapper">
+  <div class="customers-container">
+    
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-title">
+        <h1>Customers Management</h1>
+        <p class="subtitle">Manage users and their accounts</p>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value">{{ getTotalUsersCount() }}</div>
+          <div class="stat-sublabel">All accounts</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon orange">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Administrators</div>
+          <div class="stat-value">{{ getAdminCount() }}</div>
+          <div class="stat-sublabel">Admin accounts</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Regular Users</div>
+          <div class="stat-value">{{ getUserCount() }}</div>
+          <div class="stat-sublabel">User accounts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="section-header">
+      <div class="section-title">
+        <h2>User List</h2>
+        <div class="search-and-filters">
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input 
+              type="text" 
+              placeholder="Search by name or email..."
+              [(ngModel)]="searchQuery"
+              (input)="onSearchChange()"
+            />
+          </div>
+          <div class="filter-tags">
+            <button 
+              class="filter-tag" 
+              [class.active]="activeFilter === 'all'"
+              (click)="filterUsers('all')">
+              All Users
+            </button>
+            <button 
+              class="filter-tag" 
+              [class.active]="activeFilter === 'admin'"
+              (click)="filterUsers('admin')">
+              Admins
+            </button>
+            <button 
+              class="filter-tag" 
+              [class.active]="activeFilter === 'user'"
+              (click)="filterUsers('user')">
+              Users
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading users...</p>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="error && !isLoading" class="error-state">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="loadUsers()">
+        <i class="fas fa-redo"></i> Retry
+      </button>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!isLoading && !error && filteredUsers.length === 0" class="empty-state">
+      <i class="fas fa-users-slash"></i>
+      <h2>No users found</h2>
+      <p *ngIf="searchQuery">Try adjusting your search query</p>
+      <p *ngIf="!searchQuery && activeFilter !== 'all'">No {{ activeFilter }} users found</p>
+    </div>
+
+    <!-- Users List -->
+    <div *ngIf="!isLoading && !error && filteredUsers.length > 0" class="users-section">
+      
+      <div class="users-grid">
+        <div *ngFor="let user of paginatedUsers" class="user-card">
+          
+          <!-- User Header -->
+          <div class="user-card-header">
+            <div class="user-avatar-container">
+              <div class="user-avatar">{{ getUserInitials(user) }}</div>
+            </div>
+            <div class="user-info">
+              <h3 class="user-name">{{ user.name }} {{ user.surname }}</h3>
+              <p class="user-email">{{ user.email }}</p>
+            </div>
+            <span class="role-badge" [ngClass]="getRoleBadgeClass(user.role)">
+              {{ user.role }}
+            </span>
+          </div>
+
+          <!-- User Details -->
+          <div class="user-card-body">
+            <div class="user-detail">
+              <i class="fas fa-calendar-alt"></i>
+              <div class="detail-content">
+                <span class="detail-label">Member Since</span>
+                <span class="detail-value">{{ formatDate(user.createdAt) }}</span>
+              </div>
+            </div>
+
+            <div class="user-detail">
+              <i class="fas fa-birthday-cake"></i>
+              <div class="detail-content">
+                <span class="detail-label">Date of Birth</span>
+                <span class="detail-value">{{ formatDate(user.dateOfBirth) }}</span>
+              </div>
+            </div>
+
+            <div class="user-detail">
+              <i class="fas fa-envelope"></i>
+              <div class="detail-content">
+                <span class="detail-label">Email</span>
+                <span class="detail-value">{{ user.email }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Footer -->
+          <div class="user-card-footer">
+            <button class="action-btn secondary">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="action-btn danger" (click)="openDeleteModal(user)">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button 
+          class="pagination-btn" 
+          [disabled]="currentPage === 1"
+          (click)="goToPage(currentPage - 1)">
+          <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        
+        <button 
+          *ngFor="let page of getVisiblePages()"
+          class="pagination-btn page-number"
+          [class.active]="page === currentPage"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+        
+        <button 
+          class="pagination-btn"
+          [disabled]="currentPage === totalPages"
+          (click)="goToPage(currentPage + 1)">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DELETE MODAL -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Delete User</h2>
+        <button class="close-btn" (click)="closeDeleteModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="warning-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <p class="modal-text">
+          Are you sure you want to delete 
+          <strong>{{ selectedUser?.name }} {{ selectedUser?.surname }}</strong>?
+        </p>
+        <p class="modal-warning">This action cannot be undone and will permanently remove all user data.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeDeleteModal()">Cancel</button>
+        <button class="btn-delete" (click)="confirmDelete()">
+          <i class="fas fa-trash"></i> Delete User
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

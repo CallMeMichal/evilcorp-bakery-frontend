@@ -1,0 +1,367 @@
+<div class="products-management-wrapper">
+  <div class="products-container">
+    
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-title">
+        <h1>Products Management</h1>
+        <p class="subtitle">Manage your bakery products inventory</p>
+      </div>
+      <button class="btn-add-product" (click)="openCreateModal()">
+        <i class="fas fa-plus"></i> Add New Product
+      </button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <i class="fas fa-box"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Total Products</div>
+          <div class="stat-value">{{ getTotalProductsCount() }}</div>
+          <div class="stat-sublabel">All items</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon yellow">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Low Stock</div>
+          <div class="stat-value">{{ getLowStockCount() }}</div>
+          <div class="stat-sublabel">Less than 10</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon red">
+          <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Out of Stock</div>
+          <div class="stat-value">{{ getOutOfStockCount() }}</div>
+          <div class="stat-sublabel">Needs restock</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="section-header">
+      <div class="section-title">
+        <h2>Product List</h2>
+        <div class="search-and-filters">
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input 
+              type="text" 
+              placeholder="Search by name or description..."
+              [(ngModel)]="searchQuery"
+              (input)="onSearchChange()"
+            />
+          </div>
+          <div class="filter-tags">
+            <button 
+              class="filter-tag" 
+              [class.active]="activeFilter === 'all'"
+              (click)="filterProducts('all')">
+              All Products
+            </button>
+            <button 
+              *ngFor="let category of categories"
+              class="filter-tag" 
+              [class.active]="activeFilter === category"
+              (click)="filterProducts(category)">
+              {{ category }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading products...</p>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="error && !isLoading" class="error-state">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="loadProducts()">
+        <i class="fas fa-redo"></i> Retry
+      </button>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!isLoading && !error && filteredProducts.length === 0" class="empty-state">
+      <i class="fas fa-box-open"></i>
+      <h2>No products found</h2>
+      <p *ngIf="searchQuery">Try adjusting your search query</p>
+      <p *ngIf="!searchQuery && activeFilter !== 'all'">No products in this category</p>
+      <button class="btn-add-product" (click)="openCreateModal()">
+        <i class="fas fa-plus"></i> Add First Product
+      </button>
+    </div>
+
+    <!-- Products Grid -->
+    <div *ngIf="!isLoading && !error && filteredProducts.length > 0" class="products-section">
+      
+      <div class="products-grid">
+        <div *ngFor="let product of paginatedProducts" class="product-card">
+          
+          <!-- Product Image -->
+          <div class="product-image">
+            <img [src]="product.base64Image" [alt]="product.name" />
+            <div class="stock-badge" [ngClass]="getStockBadgeClass(product.stock)">
+              <span *ngIf="product.stock === 0">Out of Stock</span>
+              <span *ngIf="product.stock > 0 && product.stock < 10">Low Stock: {{ product.stock }}</span>
+              <span *ngIf="product.stock >= 10">In Stock: {{ product.stock }}</span>
+            </div>
+          </div>
+
+          <!-- Product Info -->
+          <div class="product-card-body">
+            <div class="product-header">
+              <h3 class="product-name">{{ product.name }}</h3>
+              <span class="category-badge">{{ product.category }}</span>
+            </div>
+            
+            <p class="product-description">{{ product.description }}</p>
+            
+            <div class="product-details">
+              <div class="detail-item">
+                <i class="fas fa-dollar-sign"></i>
+                <div class="detail-content">
+                  <span class="detail-label">Price</span>
+                  <span class="detail-value">{{ formatPrice(product.price) }}</span>
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <i class="fas fa-warehouse"></i>
+                <div class="detail-content">
+                  <span class="detail-label">Stock</span>
+                  <span class="detail-value" [class.warning]="product.stock < 10">
+                    {{ product.stock }} units
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Footer -->
+          <div class="product-card-footer">
+            <button class="action-btn secondary" (click)="openEditModal(product)">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="action-btn danger" (click)="openDeleteModal(product)">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button 
+          class="pagination-btn" 
+          [disabled]="currentPage === 1"
+          (click)="goToPage(currentPage - 1)">
+          <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        
+        <button 
+          *ngFor="let page of getVisiblePages()"
+          class="pagination-btn page-number"
+          [class.active]="page === currentPage"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+        
+        <button 
+          class="pagination-btn"
+          [disabled]="currentPage === totalPages"
+          (click)="goToPage(currentPage + 1)">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CREATE MODAL -->
+  <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+    <div class="modal large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Create New Product</h2>
+        <button class="close-btn" (click)="closeCreateModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="createProduct()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Product Name *</label>
+              <input type="text" [(ngModel)]="createForm.name" name="name" required />
+            </div>
+            <div class="form-group">
+              <label>Category *</label>
+              <select [(ngModel)]="createForm.category" name="category" required>
+                <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Description *</label>
+            <textarea [(ngModel)]="createForm.description" name="description" rows="3" required></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Price ($) *</label>
+              <input type="number" [(ngModel)]="createForm.price" name="price" step="0.01" min="0" required />
+            </div>
+            <div class="form-group">
+              <label>Stock Quantity *</label>
+              <input type="number" [(ngModel)]="createForm.stock" name="stock" min="0" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Product Image *</label>
+            <div class="image-upload">
+              <input 
+                type="file" 
+                id="create-image" 
+                accept="image/*" 
+                (change)="onCreateImageChange($event)"
+                hidden
+              />
+              <label for="create-image" class="image-upload-label">
+                <div class="image-preview" *ngIf="imagePreview">
+                  <img [src]="imagePreview" alt="Preview" />
+                </div>
+                <div class="image-placeholder" *ngIf="!imagePreview">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                  <p>Click to upload image</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeCreateModal()">Cancel</button>
+            <button type="submit" class="btn-primary">Create Product</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Edit Product</h2>
+        <button class="close-btn" (click)="closeEditModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="updateProduct()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Product Name</label>
+              <input type="text" [(ngModel)]="editForm.name" name="name" />
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select [(ngModel)]="editForm.category" name="category">
+                <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea [(ngModel)]="editForm.description" name="description" rows="3"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Price ($)</label>
+              <input type="number" [(ngModel)]="editForm.price" name="price" step="0.01" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Stock Quantity</label>
+              <input type="number" [(ngModel)]="editForm.stock" name="stock" min="0" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Product Image</label>
+            <div class="image-upload">
+              <input 
+                type="file" 
+                id="edit-image" 
+                accept="image/*" 
+                (change)="onEditImageChange($event)"
+                hidden
+              />
+              <label for="edit-image" class="image-upload-label">
+                <div class="image-preview" *ngIf="imagePreview">
+                  <img [src]="imagePreview" alt="Preview" />
+                </div>
+                <div class="image-placeholder" *ngIf="!imagePreview">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                  <p>Click to change image</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeEditModal()">Cancel</button>
+            <button type="submit" class="btn-primary">Update Product</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE MODAL -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal small" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Delete Product</h2>
+        <button class="close-btn" (click)="closeDeleteModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="warning-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <p class="modal-text">
+          Are you sure you want to delete 
+          <strong>{{ selectedProduct?.name }}</strong>?
+        </p>
+        <p class="modal-warning">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeDeleteModal()">Cancel</button>
+        <button class="btn-delete" (click)="confirmDelete()">
+          <i class="fas fa-trash"></i> Delete Product
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

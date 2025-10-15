@@ -3,63 +3,69 @@
     <a 
       *ngIf="hasAccess('overview')"
       class="nav-item" 
-      routerLink="/user-dashboard/overview"
+      [routerLink]="'/' + dashboardPrefix + '/overview'"
       routerLinkActive="active"
       (click)="setActiveTab('overview')">
       <i class="fas fa-chart-bar"></i>
       <span>Overview</span>
     </a>
-
+    
     <a 
       *ngIf="hasAccess('orders')"
       class="nav-item" 
-      [class.active]="activeTab === 'orders'"
-      routerLink="/user-dashboard/orders"
+      [routerLink]="'/' + dashboardPrefix + '/orders'"
+      routerLinkActive="active"
       (click)="setActiveTab('orders')">
       <i class="fas fa-shopping-cart"></i>
       <span>Orders</span>
     </a>
-
+    
     <a 
       *ngIf="hasAccess('customers')"
       class="nav-item" 
-      [class.active]="activeTab === 'customers'"
+      [routerLink]="'/' + dashboardPrefix + '/customers'"
+      routerLinkActive="active"
       (click)="setActiveTab('customers')">
       <i class="fas fa-users"></i>
       <span>Customers</span>
     </a>
 
+    <!-- DODAJ TO - Products dla admina -->
+    <a 
+      *ngIf="hasAccess('products')"
+      class="nav-item" 
+      [routerLink]="'/' + dashboardPrefix + '/products'"
+      routerLinkActive="active"
+      (click)="setActiveTab('products')">
+      <i class="fas fa-box"></i>
+      <span>Products</span>
+    </a>
+    
     <a 
       *ngIf="hasAccess('analytics')"
       class="nav-item" 
-      [class.active]="activeTab === 'analytics'"
+      [routerLink]="'/' + dashboardPrefix + '/analytics'"
+      routerLinkActive="active"
       (click)="setActiveTab('analytics')">
       <i class="fas fa-chart-pie"></i>
       <span>Analytics</span>
     </a>
-
-    <a 
-      *ngIf="hasAccess('inventory')"
-      class="nav-item" 
-      [class.active]="activeTab === 'inventory'"
-      (click)="setActiveTab('inventory')">
-      <i class="fas fa-warehouse"></i>
-      <span>Inventory</span>
-    </a>
-
+    
+    
     <div class="nav-divider"></div>
-
+    
     <div class="nav-section-title">SETTINGS</div>
-
+    
     <a 
       *ngIf="hasAccess('settings')"
       class="nav-item" 
-      [class.active]="activeTab === 'settings'"
+      [routerLink]="'/' + dashboardPrefix + '/settings'"
+      routerLinkActive="active"
       (click)="setActiveTab('settings')">
       <i class="fas fa-cog"></i>
       <span>Settings</span>
     </a>
-
+    
     <a class="nav-item logout" (click)="logout()">
       <i class="fas fa-sign-out-alt"></i>
       <span>Logout</span>

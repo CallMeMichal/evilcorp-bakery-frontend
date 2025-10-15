@@ -133,6 +133,20 @@ export class Header implements OnInit {
     }
   }
 
+
+  navigateToProfile(): void {
+    if (!this.userInfo) return;
+
+    const role = this.userInfo.role.toLowerCase().trim();
+    
+    if (role === 'admin' || role === 'administrator') {
+      this.router.navigate(['/admin-dashboard/overview']);
+    } else {
+      this.router.navigate(['/user-dashboard/overview']);
+    }
+  }
+
+
   selectSuggestion(suggestion: any): void {
     this.router.navigate(['/products', suggestion.id]);
     this.searchQuery = '';

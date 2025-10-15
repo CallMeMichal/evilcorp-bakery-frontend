@@ -18,17 +18,22 @@ export class UserPanel implements OnInit {
   isLoggedIn = false;
   userInfo: { name: string; surname: string; role: string } | null = null;
   userRole: string = '';
+  dashboardPrefix: string = 'user-dashboard'; // DODAJ TO
 
   ngOnInit() {
     this.userInfo = this.authService.getUserInfo();
     this.userRole = this.userInfo?.role || '';
-  
+    
+    // DODAJ TO - ustaw prefix w zależności od roli
+    this.dashboardPrefix = this.userRole.toLowerCase().includes('admin') 
+      ? 'admin-dashboard' 
+      : 'user-dashboard';
   }
 
   // Metoda sprawdzająca dostęp do zakładki
   hasAccess(tab: string): boolean {
     const rolePermissions: { [key: string]: string[] } = {
-      'admin': ['overview', 'orders', 'customers', 'analytics', 'inventory', 'settings'],
+      'admin': ['overview', 'orders', 'customers', 'analytics', 'products', 'settings'],
       'user': ['overview','orders', 'settings'],
     };
 

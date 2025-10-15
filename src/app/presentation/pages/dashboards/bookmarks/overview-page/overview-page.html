@@ -222,15 +222,20 @@
                 </div>
               </div>
 
-              <div class="info-card">
+                <div class="info-card">
                 <div class="info-icon">
-                  <i class="fas fa-calendar-check"></i>
+                    <i class="fas fa-calendar-check"></i>
                 </div>
                 <div class="info-content">
-                  <div class="info-label">Member Since</div>
-                  <div class="info-value">{{ formatDate(getMemberSinceDate()) }}</div>
+                    <div class="info-label">Member Since</div>
+                    <div class="info-value" *ngIf="memberSinceDate">
+                    {{ formatDate(memberSinceDate) }}
+                    </div>
+                    <div class="info-value" *ngIf="!memberSinceDate">
+                    Loading...
+                    </div>
                 </div>
-              </div>
+                </div>
             </div>
           </div>
 

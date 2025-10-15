@@ -51,6 +51,9 @@ export class AuthService {
     };
   }
 
+
+
+
   logout(): void {
     localStorage.removeItem('jwt_token');
   }

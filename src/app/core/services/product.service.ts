@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Product } from '../../domain/product';
 
 @Injectable({
@@ -43,11 +43,42 @@ export class ProductService {
 
 
   getCategories(): Observable<string[]> {
-  return this.getProducts().pipe(
-    map(products => {
-      const categories = products.map(p => p.category);
-      return [...new Set(categories)].sort(); // Unikalne kategorie, posortowane
-    })
-  );
-}
+    return this.getProducts().pipe(
+      map(products => {
+        const categories = products.map(p => p.category);
+        return [...new Set(categories)].sort(); // Unikalne kategorie, posortowane
+      })
+    );
+  }
+
+  createProduct(product: Partial<Product>): Observable<Product | null> {
+    return this.http.post<any>(this.apiUrl, product).pipe(
+      map(response => response.data || null),
+      catchError(error => {
+        console.error('Error creating product:', error);
+        throw error;
+      })
+    );
+  }
+
+  updateProduct(id: number, product: Partial<Product>): Observable<Product | null> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, product).pipe(
+      map(response => response.data || null),
+      catchError(error => {
+        console.error(`Error updating product ${id}:`, error);
+        throw error;
+      })
+    );
+  }
+
+  deleteProduct(id: number): Observable<boolean> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
+      map(response => response.success),
+      catchError(error => {
+        console.error(`Error deleting product ${id}:`, error);
+        throw error;
+      })
+    );
+  }
+
 }

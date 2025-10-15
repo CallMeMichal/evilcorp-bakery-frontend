@@ -86,7 +86,7 @@
 
       <!-- User Profile for logged in users -->
       <div class="profile-container" *ngIf="isLoggedIn && userInfo">
-        <button class="profile-button" routerLink="/user-dashboard">
+        <button class="profile-button" (click)="navigateToProfile()">
           <div class="profile-avatar">{{ userInfo.name.charAt(0).toUpperCase() }}</div>
           <div class="profile-info">
             <span class="profile-name">{{ userInfo.name }} {{ userInfo.surname }}</span>

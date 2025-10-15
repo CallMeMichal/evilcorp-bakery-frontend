@@ -5,6 +5,7 @@ import { OrderService } from '../../../../../core/services/order.service';
 import { ProductService } from '../../../../../core/services/product.service';
 import { AuthService } from '../../../../../core/services/auth/auth.service';
 import { Order } from '../../../../../domain/order';
+import { UserService } from '../../../../../core/services/user.service';
 
 interface Activity {
   icon: string;
@@ -27,7 +28,7 @@ export class OverviewPage implements OnInit {
   orders: Order[] = [];
   isLoading = false;
   error: string | null = null;
-  
+
   totalOrders = 0;
   activeOrders = 0;
   completedOrders = 0;
@@ -38,8 +39,11 @@ export class OverviewPage implements OnInit {
   popularProducts: any[] = [];
   isLoadingProducts = false;
 
+  memberSinceDate: Date | null = null;
+
   constructor(
     private authService: AuthService,
+    private userService : UserService,
     private orderService: OrderService,
     private productService: ProductService,
     private router: Router
@@ -55,6 +59,7 @@ export class OverviewPage implements OnInit {
 
     this.loadDashboardData();
     this.loadPopularProducts();
+    this.loadMemberSinceDate();
   }
 
   loadDashboardData() {
@@ -156,11 +161,20 @@ export class OverviewPage implements OnInit {
     return 'Good Evening';
   }
 
-  getMemberSinceDate(): Date {
-    const monthAgo = new Date();
-    monthAgo.setMonth(monthAgo.getMonth() - 1);
-    return monthAgo;
+  loadMemberSinceDate() {
+    if (!this.userInfo?.id) return;
+
+    this.userService.getUserJoinDate(this.userInfo.id).subscribe({
+      next: (date) => {
+        this.memberSinceDate = date;
+      },
+      error: (error) => {
+        console.error('Error loading member since date:', error);
+        this.memberSinceDate = new Date();
+      }
+    });
   }
+
 
   getImageSrc(base64Image: string): string {
     if (!base64Image) {

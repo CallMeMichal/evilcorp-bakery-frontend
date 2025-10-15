@@ -12,6 +12,8 @@ import { OrdersPage } from './pages/dashboards/bookmarks/orders-page/orders-page
 import { SingleProductPage } from './pages/single-product-page/single-product-page';
 import { SummaryPage } from './pages/summary-page/summary-page';
 import { OverviewPage } from './pages/dashboards/bookmarks/overview-page/overview-page';
+import { CustomersPage } from './pages/dashboards/bookmarks/customers-page/customers-page';
+import { ProductManagementPage } from './pages/dashboards/bookmarks/product-management-page/product-management-page';
 
 export const routes: Routes = [
     { path: '', component: HomePage },
@@ -21,16 +23,26 @@ export const routes: Routes = [
     { path: 'checkout', component: CheckoutPage },
     { path: 'register', component: RegisterPage },
     { path: 'signin', component: SigninPage },
-    { path: 'admin-dashboard', component: AdminDashboard },
-    { path: 'orders', component:OrdersPage},
-    { path: 'products/:id', component:SingleProductPage},
-    { path: 'summary', component:SummaryPage},
+    { path: 'products/:id', component: SingleProductPage },
+    { path: 'summary', component: SummaryPage },
     { 
         path: 'user-dashboard', 
         component: UserDashboard, 
         children: [
-            { path: 'orders', component: OrdersPage },
+            { path: '', redirectTo: 'overview', pathMatch: 'full' },
             { path: 'overview', component: OverviewPage },
+            { path: 'orders', component: OrdersPage }
         ]
     },
+    { 
+        path: 'admin-dashboard', 
+        component: AdminDashboard,
+        children: [
+            { path: '', redirectTo: 'overview', pathMatch: 'full' },
+            { path: 'overview', component: OverviewPage },
+            { path: 'orders', component: OrdersPage },
+            { path: 'customers', component: CustomersPage },
+            { path: 'products', component: ProductManagementPage }
+        ]
+    }
 ];
