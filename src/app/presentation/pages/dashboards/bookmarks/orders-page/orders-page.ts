@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { OrderService } from '../../../../../core/services/order.service'; 
 import { Order } from '../../../../../domain/order'; 
+import { Product } from '../../../../../domain/product';
+import { ProductPhotos } from '../../../../../domain/productPhotos';
 import { CoreModule } from '../../../../../core/core.module';
 import { AuthService } from '../../../../../core/services/auth/auth.service';
 import { Router } from '@angular/router';
@@ -160,9 +162,26 @@ export class OrdersPage implements OnInit {
     return this.orders.reduce((total, order) => total + order.totalAmount, 0);
   }
 
+  // ZAKTUALIZOWANA METODA - pobiera główne zdjęcie z nowej struktury
+  getProductMainImage(product: Product): string {
+    if (!product.photos || product.photos.length === 0) {
+      return 'assets/images/no-image.png'; // fallback image
+    }
+    
+    // Znajdź główne zdjęcie
+    const mainPhoto = product.photos.find((photo: ProductPhotos) => photo.isMain);
+    if (mainPhoto) {
+      return mainPhoto.url;
+    }
+    
+    // Jeśli nie ma głównego, weź pierwsze dostępne
+    return product.photos[0].url;
+  }
+
+  // STARA METODA - zachowana dla backward compatibility jeśli gdzieś jeszcze jest używana
   getImageSrc(base64Image: string): string {
     if (!base64Image) {
-      return 'assets/placeholder.jpg';
+      return 'assets/images/no-image.png';
     }
     
     if (base64Image.startsWith('data:image')) {

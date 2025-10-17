@@ -36,7 +36,7 @@
 
       <div class="product-details">
         
-        <!-- Product Images -->
+        <!-- Product Images Gallery -->
         <div class="product-gallery">
           <div class="main-image">
             <img [src]="selectedImage" [alt]="product.name" />
@@ -45,11 +45,30 @@
             </div>
           </div>
           
-          <!-- Thumbnail images - if you have multiple images in the future -->
-          <div class="thumbnail-images">
-            <div class="thumbnail active">
-              <img [src]="product.base64Image" [alt]="product.name" />
+          <!-- Thumbnail images - tylko jeśli ma zdjęcia -->
+          <div class="thumbnail-images" *ngIf="hasPhotos()">
+            <div 
+              *ngFor="let photo of getPhotos()"
+              class="thumbnail"
+              [class.active]="selectedPhotoId === photo.id"
+              (click)="selectImage(photo.url, photo.id)">
+              <img [src]="photo.url" [alt]="product.name" />
+              <div class="main-badge" *ngIf="photo.isMain">
+                <i class="fas fa-star"></i>
+              </div>
             </div>
+          </div>
+
+          <!-- Photo counter - tylko dla wielu zdjęć -->
+          <div class="photo-counter" *ngIf="hasMultiplePhotos()">
+            <i class="fas fa-images"></i>
+            <span>{{ getPhotos().length }} photos available</span>
+          </div>
+
+          <!-- Info o braku zdjęć -->
+          <div class="no-photos-info" *ngIf="!hasPhotos()">
+            <i class="fas fa-camera"></i>
+            <span>No photos available</span>
           </div>
         </div>
 

@@ -3,6 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../../../core/services/user.service';
 import { User } from '../../../../../domain/user';
+import { UserAddress } from '../../../../../domain/address';
+
+// Interface dla formularza edycji
+interface EditUserForm {
+  name?: string;
+  surname?: string;
+  email?: string;
+  role?: string;
+  dateOfBirth?: string;
+  isActive?: boolean;
+  addresses?: UserAddress[];
+}
 
 @Component({
   selector: 'app-customers-page',
@@ -25,9 +37,11 @@ export class CustomersPage implements OnInit {
   itemsPerPage = 6;
   totalPages = 0;
 
-  // Delete modal
-  showDeleteModal = false;
+  // Edit Modal
+  showEditModal = false;
   selectedUser: User | null = null;
+  editForm: EditUserForm = {};
+  isUpdating = false;
 
   constructor(private userService: UserService) {}
 
@@ -55,8 +69,8 @@ export class CustomersPage implements OnInit {
     });
   }
 
-  filterUsers(role: string) {
-    this.activeFilter = role;
+  filterUsers(filter: string) {
+    this.activeFilter = filter;
     this.currentPage = 1;
     this.applyFilters();
   }
@@ -69,14 +83,23 @@ export class CustomersPage implements OnInit {
   applyFilters() {
     let filtered = [...this.users];
 
-    // Filter by role
     if (this.activeFilter !== 'all') {
-      filtered = filtered.filter(user => 
-        user.role.toLowerCase() === this.activeFilter.toLowerCase()
-      );
+      switch (this.activeFilter) {
+        case 'admin':
+          filtered = filtered.filter(user => user.role.toLowerCase() === 'admin');
+          break;
+        case 'user':
+          filtered = filtered.filter(user => user.role.toLowerCase() === 'user');
+          break;
+        case 'active':
+          filtered = filtered.filter(user => user.isActive === true);
+          break;
+        case 'inactive':
+          filtered = filtered.filter(user => user.isActive === false);
+          break;
+      }
     }
 
-    // Filter by search query
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase();
       filtered = filtered.filter(user =>
@@ -127,6 +150,7 @@ export class CustomersPage implements OnInit {
     return pages;
   }
 
+  // Statistics methods
   getTotalUsersCount(): number {
     return this.users.length;
   }
@@ -143,35 +167,132 @@ export class CustomersPage implements OnInit {
     ).length;
   }
 
-  // Delete modal methods
-  openDeleteModal(user: User) {
+  getActiveUsersCount(): number {
+    return this.users.filter(user => user.isActive === true).length;
+  }
+
+  getInactiveUsersCount(): number {
+    return this.users.filter(user => user.isActive === false).length;
+  }
+
+  // Edit modal methods
+  openEditModal(user: User) {
+    console.log('User data from API:', user); // Debug
+
     this.selectedUser = user;
-    this.showDeleteModal = true;
+    this.editForm = {
+      name: user.name,
+      surname: user.surname,
+      email: user.email,
+      role: user.role === 'Admin' ? 'Administrator' : user.role, // ✅ Mapowanie Admin -> Administrator
+      dateOfBirth: this.formatDateForInput(user.dateOfBirth), // ✅ Formatowanie ISO -> YYYY-MM-DD
+      isActive: user.isActive,
+      addresses: user.addresses ? [...user.addresses] : []
+    };
+    
+    console.log('Mapped editForm:', this.editForm); // Debug
+    this.showEditModal = true;
   }
 
-  closeDeleteModal() {
-    this.showDeleteModal = false;
+  closeEditModal() {
+    this.showEditModal = false;
     this.selectedUser = null;
+    this.editForm = {};
+    this.isUpdating = false;
   }
 
-  confirmDelete() {
-    if (!this.selectedUser) return;
+  addAddress() {
+    if (!this.editForm.addresses) {
+      this.editForm.addresses = [];
+    }
+    
+    const newAddress: UserAddress = {
+      id: 0,
+      street: '',
+      city: '',
+      postalCode: '',
+      country: '',
+      isDefault: this.editForm.addresses.length === 0,
+      label: '',
+      phoneNumber: '',
+      phoneAreaCode: ''
+    };
+    
+    this.editForm.addresses.push(newAddress);
+  }
 
-    this.userService.deleteUser(this.selectedUser.id).subscribe({
-      next: (success) => {
-        if (success) {
-          this.users = this.users.filter(u => u.id !== this.selectedUser!.id);
-          this.applyFilters();
-          this.closeDeleteModal();
+  removeAddress(index: number) {
+    if (this.editForm.addresses) {
+      this.editForm.addresses.splice(index, 1);
+    }
+  }
+
+  setDefaultAddress(index: number) {
+    if (this.editForm.addresses) {
+      this.editForm.addresses.forEach((addr: UserAddress, i: number) => {
+        addr.isDefault = i === index;
+      });
+    }
+  }
+
+  private prepareUpdateData(): Partial<User> {
+  return {
+    name: this.editForm.name,
+    surname: this.editForm.surname,
+    email: this.editForm.email,
+    role: this.editForm.role === 'Administrator' ? 'Admin' : this.editForm.role,
+    dateOfBirth: this.editForm.dateOfBirth ? new Date(this.editForm.dateOfBirth) : undefined,
+    isActive: this.editForm.isActive,
+    addresses: this.editForm.addresses
+  };
+}
+
+  confirmUpdate() {
+    if (!this.selectedUser || this.isUpdating) return;
+
+    this.isUpdating = true;
+    const updateData = this.prepareUpdateData();
+
+    this.userService.updateUser(this.selectedUser.id, updateData).subscribe({
+      next: (updatedUser) => {
+        // ✅ Natychmiastowa aktualizacja lokalnych danych
+        const userIndex = this.users.findIndex(u => u.id === updatedUser.id);
+        if (userIndex !== -1) {
+          this.users[userIndex] = updatedUser;
         }
+        
+        this.applyFilters();
+        this.closeEditModal();
+        
+        // ✅ Opcjonalnie: ciche odświeżenie w tle dla pewności
+        this.silentRefresh();
       },
       error: (error) => {
-        console.error('Error deleting user:', error);
-        alert('Failed to delete user. Please try again.');
+        console.error('Error updating user:', error);
+        alert('Failed to update user. Please try again.');
+        this.isUpdating = false;
       }
     });
   }
 
+  private silentRefresh() {
+    // Ciche odświeżenie bez pokazywania loaderów
+    this.userService.getAllUsers().subscribe({
+      next: (users) => {
+        this.users = users.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        this.applyFilters();
+        this.isUpdating = false;
+      },
+      error: () => {
+        // Cichy błąd - dane lokalne już są zaktualizowane
+        this.isUpdating = false;
+      }
+    });
+  }
+
+  // Helper methods
   formatDate(date: Date | string): string {
     const d = new Date(date);
     return d.toLocaleDateString('en-US', {
@@ -181,8 +302,23 @@ export class CustomersPage implements OnInit {
     });
   }
 
+  formatDateForInput(date: Date | string): string {
+    if (!date) return '';
+    try {
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return '';
+      return d.toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
+  }
+
   getRoleBadgeClass(role: string): string {
     return role.toLowerCase() === 'admin' ? 'role-admin' : 'role-user';
+  }
+
+  getStatusBadgeClass(isActive: boolean): string {
+    return isActive ? 'status-active' : 'status-inactive';
   }
 
   getUserInitials(user: User): string {

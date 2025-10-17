@@ -9,8 +9,8 @@
       </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="stats-grid">
+    <!-- Stats Cards - Single Row -->
+    <div class="stats-row">
       <div class="stat-card">
         <div class="stat-icon blue">
           <i class="fas fa-users"></i>
@@ -23,6 +23,28 @@
       </div>
 
       <div class="stat-card">
+        <div class="stat-icon green">
+          <i class="fas fa-user-check"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Active Users</div>
+          <div class="stat-value">{{ getActiveUsersCount() }}</div>
+          <div class="stat-sublabel">Active accounts</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon red">
+          <i class="fas fa-user-times"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Inactive Users</div>
+          <div class="stat-value">{{ getInactiveUsersCount() }}</div>
+          <div class="stat-sublabel">Inactive accounts</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
         <div class="stat-icon orange">
           <i class="fas fa-user-shield"></i>
         </div>
@@ -30,17 +52,6 @@
           <div class="stat-label">Administrators</div>
           <div class="stat-value">{{ getAdminCount() }}</div>
           <div class="stat-sublabel">Admin accounts</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon green">
-          <i class="fas fa-user"></i>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Regular Users</div>
-          <div class="stat-value">{{ getUserCount() }}</div>
-          <div class="stat-sublabel">User accounts</div>
         </div>
       </div>
     </div>
@@ -65,6 +76,18 @@
               [class.active]="activeFilter === 'all'"
               (click)="filterUsers('all')">
               All Users
+            </button>
+            <button 
+              class="filter-tag" 
+              [class.active]="activeFilter === 'active'"
+              (click)="filterUsers('active')">
+              Active
+            </button>
+            <button 
+              class="filter-tag" 
+              [class.active]="activeFilter === 'inactive'"
+              (click)="filterUsers('inactive')">
+              Inactive
             </button>
             <button 
               class="filter-tag" 
@@ -110,56 +133,72 @@
     <div *ngIf="!isLoading && !error && filteredUsers.length > 0" class="users-section">
       
       <div class="users-grid">
-        <div *ngFor="let user of paginatedUsers" class="user-card">
+        <div *ngFor="let user of paginatedUsers" class="user-card" [class.inactive-user]="!user.isActive">
           
           <!-- User Header -->
           <div class="user-card-header">
             <div class="user-avatar-container">
-              <div class="user-avatar">{{ getUserInitials(user) }}</div>
+              <div class="user-avatar" [class.inactive-avatar]="!user.isActive">
+                {{ getUserInitials(user) }}
+              </div>
             </div>
             <div class="user-info">
               <h3 class="user-name">{{ user.name }} {{ user.surname }}</h3>
-              <p class="user-email">{{ user.email }}</p>
             </div>
-            <span class="role-badge" [ngClass]="getRoleBadgeClass(user.role)">
-              {{ user.role }}
-            </span>
+            <div class="badges">
+              <span class="role-badge" [ngClass]="getRoleBadgeClass(user.role)">
+                {{ user.role }}
+              </span>
+              <span class="status-badge" [ngClass]="getStatusBadgeClass(user.isActive)">
+                {{ user.isActive ? 'ACTIVE' : 'INACTIVE' }}
+              </span>
+            </div>
           </div>
 
           <!-- User Details -->
           <div class="user-card-body">
-            <div class="user-detail">
-              <i class="fas fa-calendar-alt"></i>
-              <div class="detail-content">
-                <span class="detail-label">Member Since</span>
-                <span class="detail-value">{{ formatDate(user.createdAt) }}</span>
+            <div class="user-detail-row">
+              <div class="user-detail">
+                <i class="fas fa-calendar-alt"></i>
+                <div class="detail-content">
+                  <span class="detail-label">MEMBER SINCE</span>
+                  <span class="detail-value">{{ formatDate(user.createdAt) }}</span>
+                </div>
               </div>
-            </div>
 
-            <div class="user-detail">
-              <i class="fas fa-birthday-cake"></i>
-              <div class="detail-content">
-                <span class="detail-label">Date of Birth</span>
-                <span class="detail-value">{{ formatDate(user.dateOfBirth) }}</span>
+              <div class="user-detail">
+                <i class="fas fa-birthday-cake"></i>
+                <div class="detail-content">
+                  <span class="detail-label">DATE OF BIRTH</span>
+                  <span class="detail-value">{{ formatDate(user.dateOfBirth) }}</span>
+                </div>
               </div>
             </div>
 
             <div class="user-detail">
               <i class="fas fa-envelope"></i>
               <div class="detail-content">
-                <span class="detail-label">Email</span>
+                <span class="detail-label">EMAIL</span>
                 <span class="detail-value">{{ user.email }}</span>
+              </div>
+            </div>
+
+            <div class="user-detail" *ngIf="user.addresses && user.addresses.length > 0">
+              <i class="fas fa-map-marker-alt"></i>
+              <div class="detail-content">
+                <span class="detail-label">ADDRESSES</span>
+                <span class="detail-value">{{ user.addresses.length }} address(es)</span>
               </div>
             </div>
           </div>
 
           <!-- User Footer -->
           <div class="user-card-footer">
-            <button class="action-btn secondary">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-            <button class="action-btn danger" (click)="openDeleteModal(user)">
-              <i class="fas fa-trash"></i> Delete
+            <button 
+              class="action-btn"
+              (click)="openEditModal(user)">
+              <i class="fas fa-edit"></i> 
+              Edit User
             </button>
           </div>
 
@@ -194,29 +233,233 @@
     </div>
   </div>
 
-  <!-- DELETE MODAL -->
-  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
+  <!-- EDIT USER MODAL -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal large-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Delete User</h2>
-        <button class="close-btn" (click)="closeDeleteModal()">
+        <h2>Edit User - {{ selectedUser?.name }} {{ selectedUser?.surname }}</h2>
+        <button class="close-btn" (click)="closeEditModal()">
           <i class="fas fa-times"></i>
         </button>
       </div>
+      
       <div class="modal-body">
-        <div class="warning-icon">
-          <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <p class="modal-text">
-          Are you sure you want to delete 
-          <strong>{{ selectedUser?.name }} {{ selectedUser?.surname }}</strong>?
-        </p>
-        <p class="modal-warning">This action cannot be undone and will permanently remove all user data.</p>
+        <form class="edit-form">
+          
+          <!-- Basic Information -->
+          <div class="form-section">
+            <h3><i class="fas fa-user"></i> Basic Information</h3>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>First Name</label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="editForm.name" 
+                  name="name"
+                  placeholder="Enter first name"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label>Last Name</label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="editForm.surname" 
+                  name="surname"
+                  placeholder="Enter last name"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Email</label>
+                <input 
+                  type="email" 
+                  [(ngModel)]="editForm.email" 
+                  name="email"
+                  placeholder="Enter email address"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label>Date of Birth</label>
+                <input 
+                  type="date" 
+                  [(ngModel)]="editForm.dateOfBirth" 
+                  name="dateOfBirth"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Role & Status -->
+          <div class="form-section">
+            <h3><i class="fas fa-shield-alt"></i> Role & Status</h3>
+            
+            <div class="form-row role-status-row">
+              <div class="form-group">
+                <label>Role</label>
+                <select [(ngModel)]="editForm.role" name="role" class="role-select">
+                  <option value="User">User</option>
+                  <option value="Administrator">Administrator</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label>Status</label>
+                <div class="toggle-container">
+                  <div class="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      [(ngModel)]="editForm.isActive" 
+                      name="isActive"
+                      id="activeToggle"
+                    />
+                    <label for="activeToggle" class="switch">
+                      <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label">
+                      {{ editForm.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Addresses Section -->
+          <div class="form-section">
+            <div class="section-header">
+              <h3><i class="fas fa-map-marker-alt"></i> Addresses</h3>
+              <button type="button" class="add-btn" (click)="addAddress()">
+                <i class="fas fa-plus"></i> Add Address
+              </button>
+            </div>
+
+            <div class="addresses-list" *ngIf="editForm.addresses && editForm.addresses.length > 0">
+              <div 
+                *ngFor="let address of editForm.addresses; let i = index" 
+                class="address-card">
+                
+                <div class="address-header">
+                  <div class="address-title">
+                    <input 
+                      type="text" 
+                      [(ngModel)]="address.label" 
+                      [name]="'addressLabel' + i"
+                      placeholder="Address Label (e.g., Home, Work)"
+                      class="label-input"
+                    />
+                    <div class="address-actions">
+                      <button 
+                        type="button" 
+                        class="default-btn"
+                        [class.active]="address.isDefault"
+                        (click)="setDefaultAddress(i)">
+                        {{ address.isDefault ? 'Default' : 'Set Default' }}
+                      </button>
+                      <button 
+                        type="button" 
+                        class="remove-btn"
+                        (click)="removeAddress(i)">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="address-form">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Street</label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="address.street" 
+                        [name]="'street' + i"
+                        placeholder="Enter street address"
+                      />
+                    </div>
+                    
+                    <div class="form-group">
+                      <label>City</label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="address.city" 
+                        [name]="'city' + i"
+                        placeholder="Enter city"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Postal Code</label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="address.postalCode" 
+                        [name]="'postalCode' + i"
+                        placeholder="Enter postal code"
+                      />
+                    </div>
+                    
+                    <div class="form-group">
+                      <label>Country</label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="address.country" 
+                        [name]="'country' + i"
+                        placeholder="Enter country"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Area Code</label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="address.phoneAreaCode" 
+                        [name]="'phoneAreaCode' + i"
+                        placeholder="Area code"
+                      />
+                    </div>
+                    
+                    <div class="form-group">
+                      <label>Phone Number</label>
+                      <input 
+                        type="text" 
+                        [(ngModel)]="address.phoneNumber" 
+                        [name]="'phoneNumber' + i"
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="!editForm.addresses || editForm.addresses.length === 0" class="empty-addresses">
+              <i class="fas fa-map-marker-alt"></i>
+              <p>No addresses added yet</p>
+            </div>
+          </div>
+
+        </form>
       </div>
+      
       <div class="modal-footer">
-        <button class="btn-cancel" (click)="closeDeleteModal()">Cancel</button>
-        <button class="btn-delete" (click)="confirmDelete()">
-          <i class="fas fa-trash"></i> Delete User
+        <button class="btn-cancel" (click)="closeEditModal()" [disabled]="isUpdating">
+          Cancel
+        </button>
+        <button 
+          class="btn-confirm"
+          (click)="confirmUpdate()"
+          [disabled]="isUpdating">
+          <i class="fas fa-spinner fa-spin" *ngIf="isUpdating"></i>
+          <i class="fas fa-save" *ngIf="!isUpdating"></i>
+          {{ isUpdating ? 'Updating...' : 'Save Changes' }}
         </button>
       </div>
     </div>

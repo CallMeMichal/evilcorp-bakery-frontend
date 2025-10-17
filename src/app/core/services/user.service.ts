@@ -8,11 +8,8 @@ import { User } from "../../domain/user";
 })
 
 export class UserService{
-
-
     private readonly apiUrl = 'https://localhost:7200/api/v1/user';
-    
-
+  
     constructor(private http: HttpClient){}
 
 
@@ -55,6 +52,16 @@ export class UserService{
             console.error(`Error deleting user ${id}:`, error);
             throw error;
         })
+    );
+  }
+
+  updateUser(id: number, user: Partial<User>): Observable<User> {
+    return this.http.put<any>(`${this.apiUrl}/update/${id}`, user).pipe( // ✅ ${id} zamiast {id}
+      map(response => response.data as User),
+      catchError(error => {
+        console.error(`Error updating user ${id}:`, error);
+        throw error;
+      })
     );
   }
 }

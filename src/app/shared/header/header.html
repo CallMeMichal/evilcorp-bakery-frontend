@@ -48,7 +48,7 @@
           </button>
         </div>
 
-        <!-- Suggestions Dropdown -->
+        <!-- Suggestions Dropdown - ZAKTUALIZOWANE -->
         <div class="search-suggestions" *ngIf="showSuggestions && suggestions.length > 0">
           <div 
             *ngFor="let suggestion of suggestions; let i = index"
@@ -57,7 +57,7 @@
             (mousedown)="selectSuggestion(suggestion)"
           >
             <div class="suggestion-image">
-              <img [src]="suggestion.base64Image" [alt]="suggestion.name" />
+              <img [src]="getSuggestionImage(suggestion)" [alt]="suggestion.name" />
             </div>
             <div class="suggestion-content">
               <div class="suggestion-name">{{suggestion.name}}</div>
@@ -97,7 +97,7 @@
     </div>
   </div>
 
-  <!-- Cart Modal (bez zmian) -->
+  <!-- Cart Modal - ZAKTUALIZOWANE -->
   <div class="cart-modal-overlay" *ngIf="showCartModal" (click)="closeCartModal()">
     <div class="cart-modal" (click)="$event.stopPropagation()">
       <div class="cart-modal-header">
@@ -116,7 +116,8 @@
         <div *ngIf="cartItems.length > 0">
           <div class="cart-item" *ngFor="let item of cartItems">
             <div class="item-image">
-              <img [src]="item.base64Image" [alt]="item.name" />
+              <!-- ZAKTUALIZOWANE - używa getCartItemImage -->
+              <img [src]="getCartItemImage(item)" [alt]="item.name" />
             </div>
             <div class="item-details">
               <h4>{{item.name}}</h4>

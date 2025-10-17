@@ -151,16 +151,16 @@
             </div>
           </div>
 
-          <!-- Order Items -->
+          <!-- Order Items - ZAKTUALIZOWANE -->
           <div class="order-items">
             <div *ngFor="let item of order.items" class="order-item">
-              <!-- Klikalne zdjęcie produktu -->
+              <!-- ZAKTUALIZOWANE - używa nowej metody getProductMainImage -->
               <img 
-                [src]="getImageSrc(item.productDTO.base64Image)" 
+                [src]="getProductMainImage(item.productDTO)" 
                 [alt]="item.productDTO.name"
                 class="item-image clickable"
                 (click)="navigateToProduct(item.productDTO.id)"
-                (error)="$any($event.target).src='assets/placeholder.jpg'"
+                (error)="$any($event.target).src='assets/images/no-image.png'"
               />
               <div class="item-details">
                 <!-- Klikalna nazwa produktu -->

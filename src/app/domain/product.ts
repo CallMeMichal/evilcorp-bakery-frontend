@@ -1,3 +1,5 @@
+import { ProductPhotos } from "./productPhotos";
+
 export interface Product {
   id: number;
   name: string;
@@ -5,5 +7,5 @@ export interface Product {
   description : string;
   price: number;
   stock: number;
-  base64Image: string;
+  photos: ProductPhotos[];
 }

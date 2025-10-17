@@ -7,9 +7,14 @@
         <h1>Products Management</h1>
         <p class="subtitle">Manage your bakery products inventory</p>
       </div>
-      <button class="btn-add-product" (click)="openCreateModal()">
-        <i class="fas fa-plus"></i> Add New Product
-      </button>
+      <div class="header-buttons">
+        <button class="btn-manage-categories" (click)="openCategoryModal()">
+          <i class="fas fa-tags"></i> Manage Categories
+        </button>
+        <button class="btn-add-product" (click)="openCreateModal()">
+          <i class="fas fa-plus"></i> Add New Product
+        </button>
+      </div>
     </div>
 
     <!-- Stats Cards -->
@@ -44,6 +49,22 @@
           <div class="stat-label">Out of Stock</div>
           <div class="stat-value">{{ getOutOfStockCount() }}</div>
           <div class="stat-sublabel">Needs restock</div>
+        </div>
+      </div>
+
+      <!-- Updated Categories stat card -->
+      <div class="stat-card categories-card">
+        <div class="stat-icon green">
+          <i class="fas fa-tags"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Categories</div>
+          <div class="stat-value">{{ getCategoryStats().activeCategories }}</div>
+          <div class="stat-details">
+            <span class="detail-item">{{ getCategoryStats().totalCategories }} total</span>
+            <span class="detail-separator">•</span>
+            <span class="detail-item">{{ getCategoryStats().inactiveCategories }} inactive</span>
+          </div>
         </div>
       </div>
     </div>
@@ -91,7 +112,7 @@
     <div *ngIf="error && !isLoading" class="error-state">
       <i class="fas fa-exclamation-circle"></i>
       <p>{{ error }}</p>
-      <button class="retry-btn" (click)="loadProducts()">
+      <button class="retry-btn" (click)="loadProductsAndCategories()">
         <i class="fas fa-redo"></i> Retry
       </button>
     </div>
@@ -115,7 +136,13 @@
           
           <!-- Product Image -->
           <div class="product-image">
-            <img [src]="product.base64Image" [alt]="product.name" />
+            <div class="image-container" *ngIf="getMainPhoto(product)">
+              <img [src]="getMainPhoto(product)!.url" [alt]="product.name" />
+              <div class="photo-indicator" *ngIf="hasMultiplePhotos(product)">
+                <i class="fas fa-images"></i>
+                {{ product.photos.length }}
+              </div>
+            </div>
             <div class="stock-badge" [ngClass]="getStockBadgeClass(product.stock)">
               <span *ngIf="product.stock === 0">Out of Stock</span>
               <span *ngIf="product.stock > 0 && product.stock < 10">Low Stock: {{ product.stock }}</span>
@@ -198,67 +225,130 @@
   <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
     <div class="modal large" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Create New Product</h2>
+        <h2>Add New Product</h2>
         <button class="close-btn" (click)="closeCreateModal()">
           <i class="fas fa-times"></i>
         </button>
       </div>
       <div class="modal-body">
-        <form (ngSubmit)="createProduct()">
+        <form>
           <div class="form-row">
             <div class="form-group">
               <label>Product Name *</label>
-              <input type="text" [(ngModel)]="createForm.name" name="name" required />
+              <input 
+                type="text" 
+                [(ngModel)]="createForm.name" 
+                name="name"
+                placeholder="Enter product name" 
+                required
+              />
             </div>
             <div class="form-group">
               <label>Category *</label>
               <select [(ngModel)]="createForm.category" name="category" required>
-                <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+                <option value="">Select Category</option>
+                <option *ngFor="let category of categories" [value]="category">
+                  {{ category }}
+                </option>
               </select>
+              <div class="form-note" *ngIf="categories.length === 0">
+                <i class="fas fa-info-circle"></i>
+                No active categories available. Please create a category first.
+              </div>
             </div>
           </div>
-
           <div class="form-group">
-            <label>Description *</label>
-            <textarea [(ngModel)]="createForm.description" name="description" rows="3" required></textarea>
+            <label>Description</label>
+            <textarea 
+              [(ngModel)]="createForm.description" 
+              name="description"
+              placeholder="Enter product description"
+              rows="3">
+            </textarea>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Price ($) *</label>
-              <input type="number" [(ngModel)]="createForm.price" name="price" step="0.01" min="0" required />
+              <label>Price *</label>
+              <input 
+                type="number" 
+                [(ngModel)]="createForm.price" 
+                name="price"
+                placeholder="0.00" 
+                min="0" 
+                step="0.01"
+                required
+              />
             </div>
             <div class="form-group">
               <label>Stock Quantity *</label>
-              <input type="number" [(ngModel)]="createForm.stock" name="stock" min="0" required />
+              <input 
+                type="number" 
+                [(ngModel)]="createForm.stock" 
+                name="stock"
+                placeholder="0" 
+                min="0"
+                required
+              />
             </div>
           </div>
 
           <div class="form-group">
-            <label>Product Image *</label>
-            <div class="image-upload">
+            <label>Product Images * (First image will be main)</label>
+            <div class="images-upload">
               <input 
                 type="file" 
-                id="create-image" 
+                id="create-images" 
                 accept="image/*" 
-                (change)="onCreateImageChange($event)"
+                multiple
+                (change)="onCreateImagesChange($event)"
                 hidden
               />
-              <label for="create-image" class="image-upload-label">
-                <div class="image-preview" *ngIf="imagePreview">
-                  <img [src]="imagePreview" alt="Preview" />
-                </div>
-                <div class="image-placeholder" *ngIf="!imagePreview">
-                  <i class="fas fa-cloud-upload-alt"></i>
-                  <p>Click to upload image</p>
-                </div>
+              <label for="create-images" class="add-image-btn">
+                <i class="fas fa-plus"></i>
+                Add Images
               </label>
+              
+              <div class="images-preview" *ngIf="createPhotoPreviews.length > 0">
+                <div 
+                  *ngFor="let preview of createPhotoPreviews; let i = index" 
+                  class="image-preview-item"
+                  [class.main-image]="i === 0"
+                >
+                  <img 
+                    [src]="preview" 
+                    [alt]="'Preview ' + (i + 1)" 
+                    (click)="openImageViewer([], createPhotoPreviews, i, false)"
+                  />
+                  <div class="image-overlay">
+                    <button type="button" class="view-btn" (click)="openImageViewer([], createPhotoPreviews, i, false)">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="set-main-btn" *ngIf="i !== 0" (click)="setMainCreatePhoto(i)">
+                      <i class="fas fa-star"></i>
+                    </button>
+                    <button type="button" class="remove-btn" (click)="removeCreatePhoto(i)">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <span class="main-label" *ngIf="i === 0">Main</span>
+                </div>
+              </div>
+              
+              <div class="upload-placeholder" *ngIf="createPhotoPreviews.length === 0">
+                <i class="fas fa-images"></i>
+                <p>No images uploaded</p>
+              </div>
             </div>
           </div>
 
           <div class="modal-actions">
-            <button type="button" class="btn-secondary" (click)="closeCreateModal()">Cancel</button>
-            <button type="submit" class="btn-primary">Create Product</button>
+            <button type="button" class="btn-secondary" (click)="closeCreateModal()">
+              Cancel
+            </button>
+            <button type="button" class="btn-primary" (click)="createProduct()" [disabled]="categories.length === 0">
+              Create Product
+            </button>
           </div>
         </form>
       </div>
@@ -275,61 +365,138 @@
         </button>
       </div>
       <div class="modal-body">
-        <form (ngSubmit)="updateProduct()">
+        <form>
           <div class="form-row">
             <div class="form-group">
-              <label>Product Name</label>
-              <input type="text" [(ngModel)]="editForm.name" name="name" />
+              <label>Product Name *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="editForm.name" 
+                name="name"
+                placeholder="Enter product name" 
+                required
+              />
             </div>
             <div class="form-group">
-              <label>Category</label>
-              <select [(ngModel)]="editForm.category" name="category">
-                <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+              <label>Category *</label>
+              <select [(ngModel)]="editForm.category" name="category" required>
+                <option value="">Select Category</option>
+                <option *ngFor="let category of getAllAvailableCategories()" [value]="category">
+                  {{ category }}
+                </option>
               </select>
             </div>
           </div>
 
           <div class="form-group">
             <label>Description</label>
-            <textarea [(ngModel)]="editForm.description" name="description" rows="3"></textarea>
+            <textarea 
+              [(ngModel)]="editForm.description" 
+              name="description"
+              placeholder="Enter product description"
+              rows="3">
+            </textarea>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Price ($)</label>
-              <input type="number" [(ngModel)]="editForm.price" name="price" step="0.01" min="0" />
+              <label>Price *</label>
+              <input 
+                type="number" 
+                [(ngModel)]="editForm.price" 
+                name="price"
+                placeholder="0.00" 
+                min="0" 
+                step="0.01"
+                required
+              />
             </div>
             <div class="form-group">
-              <label>Stock Quantity</label>
-              <input type="number" [(ngModel)]="editForm.stock" name="stock" min="0" />
+              <label>Stock Quantity *</label>
+              <input 
+                type="number" 
+                [(ngModel)]="editForm.stock" 
+                name="stock"
+                placeholder="0" 
+                min="0"
+                required
+              />
             </div>
           </div>
 
           <div class="form-group">
-            <label>Product Image</label>
-            <div class="image-upload">
+            <label>Product Images</label>
+            <div class="images-upload">
               <input 
                 type="file" 
-                id="edit-image" 
+                id="edit-images" 
                 accept="image/*" 
-                (change)="onEditImageChange($event)"
+                multiple
+                (change)="onEditImagesChange($event)"
                 hidden
               />
-              <label for="edit-image" class="image-upload-label">
-                <div class="image-preview" *ngIf="imagePreview">
-                  <img [src]="imagePreview" alt="Preview" />
-                </div>
-                <div class="image-placeholder" *ngIf="!imagePreview">
-                  <i class="fas fa-cloud-upload-alt"></i>
-                  <p>Click to change image</p>
-                </div>
+              <label for="edit-images" class="add-image-btn">
+                <i class="fas fa-plus"></i>
+                Add More Images
               </label>
+              
+              <div class="images-preview">
+                <!-- Istniejące zdjęcia -->
+                <div 
+                  *ngFor="let photo of editForm.photos; let i = index" 
+                  class="image-preview-item existing-image"
+                  [class.main-image]="photo.isMain"
+                >
+                  <img 
+                    [src]="photo.url" 
+                    [alt]="'Existing ' + (i + 1)" 
+                    (click)="openImageViewer(editForm.photos || [], editPhotoPreviews, i, true)"
+                  />
+                  <div class="image-overlay">
+                    <button type="button" class="view-btn" (click)="openImageViewer(editForm.photos || [], editPhotoPreviews, i, true)">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="set-main-btn" *ngIf="!photo.isMain" (click)="setMainEditPhoto(i, true)">
+                      <i class="fas fa-star"></i>
+                    </button>
+                    <button type="button" class="remove-btn" (click)="removeEditPhoto(i, true)">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <span class="main-label" *ngIf="photo.isMain">Main</span>
+                </div>
+                
+                <!-- Nowe zdjęcia -->
+                <div 
+                  *ngFor="let preview of editPhotoPreviews; let i = index" 
+                  class="image-preview-item new-image"
+                >
+                  <img 
+                    [src]="preview" 
+                    [alt]="'New ' + (i + 1)" 
+                    (click)="openImageViewer(editForm.photos || [], editPhotoPreviews, i, false)"
+                  />
+                  <div class="image-overlay">
+                    <button type="button" class="view-btn" (click)="openImageViewer(editForm.photos || [], editPhotoPreviews, i, false)">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="remove-btn" (click)="removeEditPhoto(i, false)">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <span class="new-label">New</span>
+                </div>
+              </div>
             </div>
           </div>
 
           <div class="modal-actions">
-            <button type="button" class="btn-secondary" (click)="closeEditModal()">Cancel</button>
-            <button type="submit" class="btn-primary">Update Product</button>
+            <button type="button" class="btn-secondary" (click)="closeEditModal()">
+              Cancel
+            </button>
+            <button type="button" class="btn-primary" (click)="updateProduct()">
+              Update Product
+            </button>
           </div>
         </form>
       </div>
@@ -363,5 +530,279 @@
       </div>
     </div>
   </div>
+
+  <!-- IMAGE VIEWER MODAL -->
+  <div class="modal-overlay image-viewer-overlay" *ngIf="showImageViewer" (click)="closeImageViewer()">
+    <div class="image-viewer-modal" (click)="$event.stopPropagation()">
+      
+      <!-- Header -->
+      <div class="viewer-header">
+        <div class="viewer-title">
+          <span class="image-counter">
+            {{ currentImageIndex + 1 }} / {{ viewerImages.length }}
+          </span>
+          <div class="image-badges">
+            <span class="badge main-badge" *ngIf="getCurrentImage()?.isMain">Main Image</span>
+            <span class="badge new-badge" *ngIf="!getCurrentImage()?.isExisting">New Image</span>
+          </div>
+        </div>
+        <button class="close-viewer-btn" (click)="closeImageViewer()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Image Container -->
+      <div class="viewer-content">
+        <button 
+          class="nav-btn prev-btn" 
+          (click)="previousImage()"
+          [disabled]="viewerImages.length <= 1">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <div class="main-image-container">
+          <img 
+            [src]="getCurrentImage()?.url" 
+            [alt]="'Image ' + (currentImageIndex + 1)"
+            class="viewer-main-image"
+          />
+        </div>
+
+        <button 
+          class="nav-btn next-btn" 
+          (click)="nextImage()"
+          [disabled]="viewerImages.length <= 1">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- Thumbnails -->
+      <div class="viewer-thumbnails" *ngIf="viewerImages.length > 1">
+        <div 
+          *ngFor="let image of viewerImages; let i = index"
+          class="thumbnail-item"
+          [class.active]="i === currentImageIndex"
+          (click)="goToImage(i)"
+        >
+          <img [src]="image.url" [alt]="'Thumbnail ' + (i + 1)" />
+          <div class="thumbnail-overlay">
+            <span class="thumb-badge main" *ngIf="image.isMain">
+              <i class="fas fa-star"></i>
+            </span>
+            <span class="thumb-badge new" *ngIf="!image.isExisting">
+              <i class="fas fa-plus"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CATEGORY MANAGEMENT MODAL -->
+<div class="modal-overlay" *ngIf="showCategoryModal" (click)="closeCategoryModal()">
+  <div class="modal large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Category Management</h2>
+      <button class="close-btn" (click)="closeCategoryModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body category-management">
+      
+      <!-- Overview Section -->
+      <div class="category-overview">
+        <div class="overview-cards">
+          <div class="overview-card total">
+            <div class="card-icon">
+              <i class="fas fa-tags"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-number">{{ getCategoryStats().totalCategories }}</div>
+              <div class="card-label">Total Categories</div>
+            </div>
+          </div>
+          
+          <div class="overview-card active">
+            <div class="card-icon">
+              <i class="fas fa-eye"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-number">{{ getCategoryStats().activeCategories }}</div>
+              <div class="card-label">Active</div>
+            </div>
+          </div>
+          
+          <div class="overview-card inactive">
+            <div class="card-icon">
+              <i class="fas fa-eye-slash"></i>
+            </div>
+            <div class="card-content">
+              <div class="card-number">{{ getCategoryStats().inactiveCategories }}</div>
+              <div class="card-label">Inactive</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Category Section -->
+      <div class="add-category-section">
+        <div class="section-header">
+          <h3>Add New Category</h3>
+          <p class="section-description">Create a new category to organize your products</p>
+        </div>
+        
+        <div class="add-category-form">
+          <div class="input-group">
+            <input 
+              type="text" 
+              [(ngModel)]="newCategoryName"
+              placeholder="Enter category name..."
+              class="category-name-input"
+              (keyup.enter)="addCategory()"
+            />
+            <button 
+              class="add-btn" 
+              (click)="addCategory()" 
+              [disabled]="!newCategoryName.trim()">
+              <i class="fas fa-plus"></i>
+              Add Category
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories List Section -->
+      <div class="categories-section">
+        <div class="section-header">
+          <h3>All Categories</h3>
+          <div class="filter-chips">
+            <button 
+              class="filter-chip"
+              [class.active]="categoryFilter === 'all'"
+              (click)="setCategoryFilter('all')">
+              All ({{ getCategoryStats().totalCategories }})
+            </button>
+            <button 
+              class="filter-chip"
+              [class.active]="categoryFilter === 'active'"
+              (click)="setCategoryFilter('active')">
+              Active ({{ getCategoryStats().activeCategories }})
+            </button>
+            <button 
+              class="filter-chip"
+              [class.active]="categoryFilter === 'inactive'"
+              (click)="setCategoryFilter('inactive')">
+              Inactive ({{ getCategoryStats().inactiveCategories }})
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isCategoryLoading" class="loading-section">
+          <div class="loading-spinner"></div>
+          <p>Loading categories...</p>
+        </div>
+
+        <!-- Categories Table -->
+        <div *ngIf="!isCategoryLoading" class="categories-table">
+          <div class="table-header">
+            <div class="col-name">Category Name</div>
+            <div class="col-status">Status</div>
+            <div class="col-products">Products</div>
+            <div class="col-actions">Actions</div>
+          </div>
+
+          <div class="table-body">
+            <div 
+              *ngFor="let category of getFilteredCategories()" 
+              class="table-row"
+              [class.inactive-row]="!category.isActive"
+              [class.deleting-row]="categoryToDelete?.id === category.id"
+            >
+              <!-- Category Name -->
+              <div class="col-name">
+                <div class="category-name-cell">
+                  <div class="category-icon">
+                    <i class="fas fa-tag"></i>
+                  </div>
+                  <span class="category-name">{{ category.name }}</span>
+                </div>
+              </div>
+
+              <!-- Status -->
+              <div class="col-status">
+                <span class="status-badge" [class.active]="category.isActive" [class.inactive]="!category.isActive">
+                  <i class="fas" [class.fa-circle]="category.isActive" [class.fa-circle-o]="!category.isActive"></i>
+                  {{ category.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+
+              <!-- Products Count -->
+              <div class="col-products">
+                <span class="products-count">{{ getCategoryProductCount(category.name) }}</span>
+              </div>
+
+              <!-- Actions -->
+              <div class="col-actions">
+                <div class="action-buttons" *ngIf="categoryToDelete?.id !== category.id">
+                  <!-- Toggle Status -->
+                  <button 
+                    class="action-btn toggle"
+                    [class.activate]="!category.isActive"
+                    [class.deactivate]="category.isActive"
+                    (click)="toggleCategoryStatus(category)"
+                    [title]="category.isActive ? 'Deactivate category' : 'Activate category'"
+                  >
+                    <i class="fas" [class.fa-eye]="!category.isActive" [class.fa-eye-slash]="category.isActive"></i>
+                  </button>
+                  
+                  <!-- Delete -->
+                  <button 
+                    class="action-btn delete"
+                    (click)="confirmDeleteCategory(category)"
+                    [disabled]="isCategoryInUse(category.name)"
+                    [title]="isCategoryInUse(category.name) ? 'Cannot delete - category is in use' : 'Delete category'"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+
+                <!-- Delete Confirmation -->
+                <div class="delete-confirmation" *ngIf="categoryToDelete?.id === category.id">
+                  <span class="confirmation-text">Delete?</span>
+                  <button class="confirm-btn" (click)="deleteCategory()">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="cancel-btn" (click)="cancelDeleteCategory()">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="getFilteredCategories().length === 0" class="empty-table">
+            <div class="empty-icon">
+              <i class="fas fa-folder-open"></i>
+            </div>
+            <p class="empty-message" *ngIf="categoryFilter === 'all'">No categories found. Create your first category above.</p>
+            <p class="empty-message" *ngIf="categoryFilter === 'active'">No active categories found.</p>
+            <p class="empty-message" *ngIf="categoryFilter === 'inactive'">No inactive categories found.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-done" (click)="closeCategoryModal()">
+        <i class="fas fa-check"></i>
+        Done
+      </button>
+    </div>
+  </div>
+</div>
 
 </div>

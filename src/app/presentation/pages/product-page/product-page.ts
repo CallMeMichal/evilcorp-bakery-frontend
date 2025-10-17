@@ -4,8 +4,9 @@ import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, switchMap, forkJoin } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Category } from '../../../domain/category';
 
 @Component({
   selector: 'app-product-page',
@@ -18,6 +19,8 @@ export class ProductPage implements OnInit {
   allProducts: any[] = [];
   filteredProducts: any[] = [];
   isLoading = true;
+  isLoadingCategories = true;
+  isLoadingProducts = true;
   
   // Pagination properties
   currentPage = 1;
@@ -32,8 +35,8 @@ export class ProductPage implements OnInit {
   isLoadingSuggestions = false;
   selectedSuggestionIndex = -1;
   
-  // Category filter - ZMIANA: array zamiast string
-  categories: string[] = [];
+  // Category filter - używamy Category[] zamiast string[]
+  categories: Category[] = [];
   selectedCategories: string[] = [];
   
   isDropdownOpen = false;
@@ -80,7 +83,7 @@ export class ProductPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadProducts();
+    this.loadCategoriesAndProducts();
     
     this.route.queryParams.subscribe(params => {
       if (params['search']) {
@@ -90,67 +93,87 @@ export class ProductPage implements OnInit {
     });
   }
 
-  private loadProducts(): void {
-    this.productService.getProducts().subscribe({
-      next: (products) => {
-        this.allProducts = products;
-        this.extractCategories();
-        this.applyFilters();
+  private loadCategoriesAndProducts(): void {
+    forkJoin({
+      categories: this.productService.getVisibleCategories(),
+      products: this.productService.getProducts()
+    }).subscribe({
+      next: (result) => {
+        this.categories = result.categories;
+              console.log(this.categories)
+        this.allProducts = result.products;
+        this.isLoadingCategories = false;
+        this.isLoadingProducts = false;
         this.isLoading = false;
+        this.applyFilters();
       },
       error: (error) => {
-        console.error('Error loading products:', error);
+        console.error('Error loading data:', error);
+        this.isLoadingCategories = false;
+        this.isLoadingProducts = false;
         this.isLoading = false;
       }
     });
-  }
-
-  private extractCategories(): void {
-    const categorySet = new Set<string>();
-    this.allProducts.forEach(product => {
-      if (product.category) {
-        categorySet.add(product.category);
-      }
-    });
-    this.categories = Array.from(categorySet).sort();
   }
 
   toggleDropdown(): void {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
-  // NOWA METODA: Toggle pojedynczej kategorii
-  toggleCategory(category: string): void {
-    const index = this.selectedCategories.indexOf(category);
+  toggleCategory(categoryName: string): void {
+    const index = this.selectedCategories.indexOf(categoryName);
     if (index > -1) {
       this.selectedCategories.splice(index, 1);
     } else {
-      this.selectedCategories.push(category);
+      this.selectedCategories.push(categoryName);
     }
     this.currentPage = 1;
     this.applyFilters();
   }
 
-  // NOWA METODA: Sprawdź czy kategoria jest zaznaczona
-  isCategorySelected(category: string): boolean {
-    return this.selectedCategories.includes(category);
+  isCategorySelected(categoryName: string): boolean {
+    return this.selectedCategories.includes(categoryName);
   }
 
-  // NOWA METODA: Wyczyść wszystkie kategorie
   clearCategories(): void {
     this.selectedCategories = [];
     this.currentPage = 1;
     this.applyFilters();
   }
 
-  // NOWA METODA: Usuń pojedynczą kategorię
-  removeCategory(category: string): void {
-    const index = this.selectedCategories.indexOf(category);
+  removeCategory(categoryName: string): void {
+    const index = this.selectedCategories.indexOf(categoryName);
     if (index > -1) {
       this.selectedCategories.splice(index, 1);
       this.currentPage = 1;
       this.applyFilters();
     }
+  }
+
+  getMainProductImage(product: any): string {
+    if (!product.photos || product.photos.length === 0) {
+      return 'assets/images/no-image.png';
+    }
+    
+    const mainPhoto = product.photos.find((photo: any) => photo.isMain);
+    if (mainPhoto) {
+      return mainPhoto.url;
+    }
+    
+    return product.photos[0].url;
+  }
+
+  getSuggestionImage(suggestion: any): string {
+    if (!suggestion.photos || suggestion.photos.length === 0) {
+      return 'assets/images/no-image.png';
+    }
+    
+    const mainPhoto = suggestion.photos.find((photo: any) => photo.isMain);
+    if (mainPhoto) {
+      return mainPhoto.url;
+    }
+    
+    return suggestion.photos[0].url;
   }
 
   @HostListener('document:click', ['$event'])
@@ -173,7 +196,7 @@ export class ProductPage implements OnInit {
   private applyFilters(): void {
     let filtered = [...this.allProducts];
 
-    // ZMIANA: Filter by multiple categories
+    // Filter by multiple categories
     if (this.selectedCategories.length > 0) {
       filtered = filtered.filter(p => this.selectedCategories.includes(p.category));
     }
@@ -246,8 +269,16 @@ export class ProductPage implements OnInit {
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
-  getCategoryCount(category: string): number {
-    return this.allProducts.filter(p => p.category === category).length;
+  getCategoryCount(categoryName: string): number {
+    return this.allProducts.filter(p => p.category === categoryName).length;
+  }
+
+  getCategoryName(category: Category): string {
+    return category.name;
+  }
+
+  getCategoryId(category: Category): number {
+    return category.id;
   }
 
   onSearchInput(event: Event): void {

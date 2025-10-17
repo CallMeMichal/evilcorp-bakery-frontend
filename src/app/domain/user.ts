@@ -1,3 +1,5 @@
+import { UserAddress } from "./address";
+
 export interface User {
   id: number;
   name: string;
@@ -6,4 +8,6 @@ export interface User {
   role: string;
   createdAt: Date;
   dateOfBirth: Date;
+  isActive: boolean;
+  addresses?: UserAddress[];
 }

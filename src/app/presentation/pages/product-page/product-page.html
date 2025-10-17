@@ -46,7 +46,7 @@
               (mousedown)="selectSuggestion(suggestion)"
             >
               <div class="suggestion-image">
-                <img [src]="suggestion.base64Image" [alt]="suggestion.name" />
+                <img [src]="getSuggestionImage(suggestion)" [alt]="suggestion.name" />
               </div>
               <div class="suggestion-content">
                 <div class="suggestion-name">{{suggestion.name}}</div>
@@ -59,7 +59,7 @@
           </div>
         </div>
 
-        <!-- ZMIENIONY DROPDOWN - Multi-select -->
+        <!-- Category Dropdown -->
         <div class="category-dropdown-container">
           <button class="category-dropdown-btn" (click)="toggleDropdown()">
             <i class="fas fa-layer-group"></i>
@@ -71,10 +71,18 @@
           </button>
           
           <div class="category-dropdown-menu" *ngIf="isDropdownOpen">
+            <!-- Loading State -->
+            <div class="category-dropdown-item" *ngIf="isLoadingCategories">
+              <span class="category-name">
+                <i class="fas fa-spinner fa-spin"></i>
+                Loading categories...
+              </span>
+            </div>
+
             <!-- Clear All Option -->
             <div 
               class="category-dropdown-item clear-all-item"
-              *ngIf="selectedCategories.length > 0"
+              *ngIf="selectedCategories.length > 0 && !isLoadingCategories"
               (click)="clearCategories()"
             >
               <span class="category-name">
@@ -87,14 +95,17 @@
             <div 
               *ngFor="let category of categories"
               class="category-dropdown-item"
-              [class.active]="isCategorySelected(category)"
-              (click)="toggleCategory(category)"
+              [class.active]="isCategorySelected(category.name)"
+              (click)="toggleCategory(category.name)"
             >
               <div class="category-checkbox">
-                <i class="fas" [class.fa-check-square]="isCategorySelected(category)" [class.fa-square]="!isCategorySelected(category)"></i>
+                <i class="fas" 
+                   [class.fa-check-square]="isCategorySelected(category.name)" 
+                   [class.fa-square]="!isCategorySelected(category.name)">
+                </i>
               </div>
-              <span class="category-name">{{category}}</span>
-              <span class="category-badge">{{getCategoryCount(category)}}</span>
+              <span class="category-name">{{category.name}}</span>
+              <span class="category-badge">{{getCategoryCount(category.name)}}</span>
             </div>
           </div>
         </div>
@@ -104,10 +115,10 @@
       <div class="active-filters" *ngIf="selectedCategories.length > 0 || searchQuery">
         <div class="filter-tags">
           <!-- Category Tags -->
-          <span class="filter-tag" *ngFor="let category of selectedCategories">
+          <span class="filter-tag" *ngFor="let categoryName of selectedCategories">
             <i class="fas fa-tag"></i>
-            {{category}}
-            <button class="remove-filter" (click)="removeCategory(category)">
+            {{categoryName}}
+            <button class="remove-filter" (click)="removeCategory(categoryName)">
               <i class="fas fa-times"></i>
             </button>
           </span>
@@ -136,7 +147,7 @@
         </p>
       </div>
 
-      <!-- Products Display (bez zmian) -->
+      <!-- Products Display -->
       <div class="products-loading" *ngIf="isLoading">
         <div class="loading-spinner">
           <i class="fas fa-spinner fa-spin"></i>
@@ -153,7 +164,7 @@
       <div class="products-grid" *ngIf="!isLoading && products.length > 0">
         <div class="product-card" *ngFor="let product of products">
           <div class="product-image clickable" (click)="navigateToProduct(product.id)">
-            <img [src]="product.base64Image" [alt]="product.name" />
+            <img [src]="getMainProductImage(product)" [alt]="product.name" />
             <div class="stock-badge" 
                 [class.low-stock]="product.stock < 10" 
                 [class.out-of-stock]="product.stock === 0">
@@ -177,7 +188,7 @@
         </div>
       </div>
 
-      <!-- Pagination (bez zmian) -->
+      <!-- Pagination -->
       <div class="pagination-container" *ngIf="!isLoading && totalPages > 1">
         <button 
           class="pagination-btn pagination-prev" 

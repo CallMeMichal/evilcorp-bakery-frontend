@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // DODAJ TO
+import { FormsModule } from '@angular/forms';
 import { SharedModule } from '../../../shared/shared.module';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
@@ -9,7 +9,7 @@ import { Product } from '../../../domain/product';
 
 @Component({
   selector: 'app-single-product-page',
-  imports: [SharedModule, CommonModule, FormsModule, RouterModule], // DODAJ FormsModule
+  imports: [SharedModule, CommonModule, FormsModule, RouterModule],
   templateUrl: './single-product-page.html',
   styleUrl: './single-product-page.scss'
 })
@@ -19,6 +19,7 @@ export class SingleProductPage implements OnInit {
   error: string | null = null;
   quantity = 1;
   selectedImage: string = '';
+  selectedPhotoId: number | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -45,9 +46,15 @@ export class SingleProductPage implements OnInit {
 
     this.productService.getProductById(id).subscribe({
       next: (product) => {
-        console.log(product);
+        console.log('Loaded product:', product);
+        console.log('Product photos:', product.photos);
+        console.log('Photos length:', product.photos?.length);
+        
         this.product = product;
-        this.selectedImage = product.base64Image;
+        
+        // Ustaw główne zdjęcie lub fallback
+        this.setMainImage();
+        
         this.isLoading = false;
       },
       error: (error) => {
@@ -56,6 +63,34 @@ export class SingleProductPage implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private setMainImage(): void {
+    if (!this.product) return;
+    
+    // Sprawdź czy produkt ma zdjęcia
+    if (this.product.photos && this.product.photos.length > 0) {
+      // Znajdź główne zdjęcie (isMain: true)
+      const mainPhoto = this.product.photos.find(photo => photo.isMain);
+      
+      if (mainPhoto) {
+        this.selectedImage = mainPhoto.url;
+        this.selectedPhotoId = mainPhoto.id;
+      } else {
+        // Jeśli nie ma głównego, weź pierwsze dostępne
+        this.selectedImage = this.product.photos[0].url;
+        this.selectedPhotoId = this.product.photos[0].id;
+      }
+    } else {
+      // Fallback gdy nie ma zdjęć
+      this.selectedImage = 'assets/images/no-image.png';
+      this.selectedPhotoId = null;
+    }
+  }
+
+  selectImage(photoUrl: string, photoId: number): void {
+    this.selectedImage = photoUrl;
+    this.selectedPhotoId = photoId;
   }
 
   increaseQuantity(): void {
@@ -99,5 +134,18 @@ export class SingleProductPage implements OnInit {
     if (this.product.stock === 0) return 'out-of-stock';
     if (this.product.stock < 10) return 'low-stock';
     return 'in-stock';
+  }
+
+  hasMultiplePhotos(): boolean {
+    return this.product?.photos && this.product.photos.length > 1 || false;
+  }
+
+  hasPhotos(): boolean {
+    return this.product?.photos && this.product.photos.length > 0 || false;
+  }
+
+  // Pomocnicza metoda do uzyskania wszystkich zdjęć
+  getPhotos() {
+    return this.product?.photos || [];
   }
 }

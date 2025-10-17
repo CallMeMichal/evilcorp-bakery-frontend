@@ -5,6 +5,8 @@ import { CartService } from '../../core/services/cart.service';
 import { ProductService } from '../../core/services/product.service';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth/auth.service';
+import { Product } from '../../domain/product';
+import { ProductPhotos } from '../../domain/productPhotos';
 import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 
 @Component({
@@ -94,6 +96,34 @@ export class Header implements OnInit {
     }
   }
 
+  // NOWA METODA - pobiera główne zdjęcie produktu dla sugestii
+  getSuggestionImage(suggestion: any): string {
+    if (!suggestion.photos || suggestion.photos.length === 0) {
+      return 'assets/images/no-image.png';
+    }
+    
+    const mainPhoto = suggestion.photos.find((photo: ProductPhotos) => photo.isMain);
+    if (mainPhoto) {
+      return mainPhoto.url;
+    }
+    
+    return suggestion.photos[0].url;
+  }
+
+  // NOWA METODA - pobiera główne zdjęcie produktu dla koszyka
+  getCartItemImage(item: any): string {
+    if (!item.photos || item.photos.length === 0) {
+      return 'assets/images/no-image.png';
+    }
+    
+    const mainPhoto = item.photos.find((photo: ProductPhotos) => photo.isMain);
+    if (mainPhoto) {
+      return mainPhoto.url;
+    }
+    
+    return item.photos[0].url;
+  }
+
   // Search methods
   onSearchInput(event: Event): void {
     const target = event.target as HTMLInputElement;
@@ -133,7 +163,6 @@ export class Header implements OnInit {
     }
   }
 
-
   navigateToProfile(): void {
     if (!this.userInfo) return;
 
@@ -145,7 +174,6 @@ export class Header implements OnInit {
       this.router.navigate(['/user-dashboard/overview']);
     }
   }
-
 
   selectSuggestion(suggestion: any): void {
     this.router.navigate(['/products', suggestion.id]);
