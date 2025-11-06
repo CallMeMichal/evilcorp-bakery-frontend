@@ -4,10 +4,12 @@ import { CommonModule } from '@angular/common';
 import { CartService } from '../../../core/services/cart.service';
 import { AddressService } from '../../../core/services/address.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { ProductService } from '../../../core/services/product.service';
 import { SharedModule } from '../../../shared/shared.module';
 import { Router } from '@angular/router';
 import { UserAddress } from '../../../domain/address';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-checkout-page',
@@ -31,6 +33,7 @@ export class CheckoutPage implements OnInit {
     private cartService: CartService,
     private addressService: AddressService,
     private authService: AuthService,
+    private productService: ProductService,
     private router: Router
   ) {}
 
@@ -120,11 +123,67 @@ export class CheckoutPage implements OnInit {
     this.selectedPaymentMethodId = methodId;
   }
 
-  goToSummary(): void {
+  validateInventory(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (this.cartItems.length === 0) {
+        resolve(true);
+        return;
+      }
+
+      const productRequests = this.cartItems.map(item =>
+        this.productService.getProductById(item.id)
+      );
+
+      forkJoin(productRequests).subscribe({
+        next: (products) => {
+          let hasErrors = false;
+          const errors: string[] = [];
+
+          products.forEach((product, index) => {
+            const cartItem = this.cartItems[index];
+
+            if (product.stock < cartItem.quantity) {
+              hasErrors = true;
+              errors.push(
+                `${product.name}: Requested ${cartItem.quantity}, but only ${product.stock} available`
+              );
+
+              // Update cart item with actual stock
+              this.cartService.updateQuantity(cartItem.id, Math.min(cartItem.quantity, product.stock));
+            }
+          });
+
+          if (hasErrors) {
+            alert(
+              'Some products in your cart have insufficient stock:\n\n' +
+              errors.join('\n') +
+              '\n\nYour cart has been updated with available quantities.'
+            );
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        },
+        error: (error) => {
+          console.error('Error validating inventory:', error);
+          alert('Failed to validate product availability. Please try again.');
+          resolve(false);
+        }
+      });
+    });
+  }
+
+  async goToSummary(): Promise<void> {
     if (!this.validateBeforePayment()) return;
-    
+
     if (!this.selectedPaymentMethodId) {
       alert('Please select a payment method');
+      return;
+    }
+
+    // Validate inventory before proceeding
+    const inventoryValid = await this.validateInventory();
+    if (!inventoryValid) {
       return;
     }
 
