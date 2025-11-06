@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { SharedModule } from '../../../shared/shared.module';
 import { OrderService } from '../../../core/services/order.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
+import { CartService } from '../../../core/services/cart.service';
 
 interface OrderData {
   cartItems: any[];
@@ -36,7 +37,12 @@ export class SummaryPage implements OnInit {
     6: 'Cash on Pickup'
   };
 
-  constructor(private router: Router,private orderService: OrderService, private authService: AuthService) {}
+  constructor(
+    private router: Router,
+    private orderService: OrderService,
+    private authService: AuthService,
+    private cartService: CartService
+  ) {}
 
   ngOnInit(): void {
     window.scrollTo(0, 0);
@@ -95,6 +101,10 @@ export class SummaryPage implements OnInit {
         next: (response) => {
           console.log('Order created successfully:', response);
           alert('Payment successful! Order has been placed.');
+
+          // Clear cart after successful order
+          this.cartService.clearCart();
+
           sessionStorage.removeItem('orderData');
           this.router.navigate(['/user-dashboard/orders']);
         },
