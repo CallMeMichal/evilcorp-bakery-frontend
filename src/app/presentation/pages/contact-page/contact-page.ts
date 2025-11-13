@@ -18,7 +18,7 @@ export class ContactPage implements OnInit {
   ngOnInit(): void {
     this.initForm();
   }
-
+  
   private initForm(): void {
     this.contactForm = this.fb.group({
       firstName: ['', [Validators.required]],

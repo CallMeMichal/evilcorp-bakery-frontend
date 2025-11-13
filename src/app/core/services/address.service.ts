@@ -22,4 +22,17 @@ export class AddressService {
       })
     );
   }
+
+    createAddress(address: UserAddress): Observable<UserAddress> {
+    return this.http.post<ApiResponse<UserAddress>>(`${this.apiUrl}/create`, address).pipe(
+      map(response => {
+        if (Array.isArray(response.data)) {
+          return response.data[0];
+        }
+        return response.data as UserAddress;
+      })
+    );
+  }
+
+
 }

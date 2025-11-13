@@ -13,7 +13,7 @@ import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-checkout-page',
-  imports: [CommonModule, SharedModule,FormsModule],
+  imports: [CommonModule, SharedModule, FormsModule],
   templateUrl: './checkout-page.html',
   styleUrl: './checkout-page.scss'
 })
@@ -29,6 +29,22 @@ export class CheckoutPage implements OnInit {
   deliveryMethod: 'delivery' | 'pickup' = 'delivery';
   selectedPaymentMethodId: number | null = null;
   orderNotes: string = '';
+  
+  // Form fields for new address
+  newAddress: UserAddress = {
+    id: 0,
+    label: '',
+    street: '',
+    postalCode: '',
+    city: '',
+    country: '',
+    phoneAreaCode: '',
+    phoneNumber: '',
+    isDefault: false
+  };
+
+  isSavingAddress = false;
+
   constructor(
     private cartService: CartService,
     private addressService: AddressService,
@@ -91,12 +107,86 @@ export class CheckoutPage implements OnInit {
 
   isAddressSelected(address: UserAddress): boolean {
     if (!this.selectedAddress) return false;
-    
     return this.selectedAddress.id === address.id;
   }
 
   toggleAddressForm(): void {
     this.showAddressForm = !this.showAddressForm;
+    
+    if (this.showAddressForm) {
+      this.resetAddressForm();
+    }
+  }
+
+  resetAddressForm(): void {
+    this.newAddress = {
+      id: 0,
+      label: '',
+      street: '',
+      postalCode: '',
+      city: '',
+      country: '',
+      phoneAreaCode: '',
+      phoneNumber: '',
+      isDefault: false
+    };
+  }
+
+  saveAddress(): void {
+    const userInfo = this.authService.getUserInfo();
+    if (!userInfo) {
+      alert('User not logged in');
+      return;
+    }
+
+    // Validation
+    if (!this.newAddress.label.trim() || 
+        !this.newAddress.street.trim() || 
+        !this.newAddress.postalCode.trim() || 
+        !this.newAddress.city.trim() || 
+        !this.newAddress.country.trim() || 
+        !this.newAddress.phoneAreaCode.trim() || 
+        !this.newAddress.phoneNumber.trim()) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    this.isSavingAddress = true;
+
+    // Ustawiamy id jako userId
+    const addressToSave: UserAddress = {
+      ...this.newAddress,
+      id: userInfo.id,
+      label: this.newAddress.label.trim(),
+      street: this.newAddress.street.trim(),
+      postalCode: this.newAddress.postalCode.trim(),
+      city: this.newAddress.city.trim(),
+      country: this.newAddress.country.trim(),
+      phoneAreaCode: this.newAddress.phoneAreaCode.trim(),
+      phoneNumber: this.newAddress.phoneNumber.trim()
+    };
+
+    this.addressService.createAddress(addressToSave).subscribe({
+      next: (createdAddress: UserAddress) => {
+        console.log('Address created successfully:', createdAddress);
+        
+        // Reload addresses silently
+        this.loadAddresses(userInfo.id);
+        
+        // Close form and reset
+        this.showAddressForm = false;
+        this.resetAddressForm();
+        this.isSavingAddress = false;
+        
+        // Select the newly created address
+        this.selectedAddress = createdAddress;
+      },
+      error: (error: any) => {
+        console.error('Error creating address:', error);
+        alert('Failed to save address. Please try again.');
+        this.isSavingAddress = false;
+      }
+    });
   }
 
   calculateTotals(): void {
@@ -148,7 +238,6 @@ export class CheckoutPage implements OnInit {
                 `${product.name}: Requested ${cartItem.quantity}, but only ${product.stock} available`
               );
 
-              // Update cart item with actual stock
               this.cartService.updateQuantity(cartItem.id, Math.min(cartItem.quantity, product.stock));
             }
           });
@@ -181,7 +270,6 @@ export class CheckoutPage implements OnInit {
       return;
     }
 
-    // Validate inventory before proceeding
     const inventoryValid = await this.validateInventory();
     if (!inventoryValid) {
       return;
